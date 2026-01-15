@@ -1,0 +1,27 @@
+{
+	"schemaVersion": 1,
+	"id": "fletch_craft",
+	"version": "${version}",
+	"name": "Fletch Craft",
+	"description": "Makes the fletching table functional as a specialized crafting table for arrow-making and wood processing recipes.",
+	"authors": ["justfatlard"],
+	"contact": {
+		"homepage": "https://github.com/justfatlard/fletch-craft",
+		"sources": "https://github.com/justfatlard/fletch-craft",
+		"issues": "https://github.com/justfatlard/fletch-craft/issues"
+	},
+	"license": "MIT",
+	"icon": "assets/fletch_craft/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": ["justfatlard.fletch_craft.FletchCraft"],
+		"client": ["justfatlard.fletch_craft.FletchCraftClient"]
+	},
+	"mixins": ["fletch_craft.mixins.json"],
+	"depends": {
+		"fabricloader": ">=0.16.0",
+		"fabric-api": "*",
+		"minecraft": "~1.21",
+		"java": ">=21"
+	}
+}

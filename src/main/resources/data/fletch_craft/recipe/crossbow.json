@@ -1,0 +1,18 @@
+{
+  "type": "fletch_craft:fletching",
+  "group": "weapons",
+  "width": 3,
+  "height": 2,
+  "ingredients": [
+    "minecraft:stick",
+    "minecraft:iron_nugget",
+    "minecraft:stick",
+    "minecraft:string",
+    "minecraft:stick",
+    "minecraft:string"
+  ],
+  "result": {
+    "id": "minecraft:crossbow",
+    "count": 1
+  }
+}

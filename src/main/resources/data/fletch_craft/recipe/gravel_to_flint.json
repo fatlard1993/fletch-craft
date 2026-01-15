@@ -1,0 +1,16 @@
+{
+  "type": "fletch_craft:fletching",
+  "group": "flint",
+  "width": 2,
+  "height": 2,
+  "ingredients": [
+    "minecraft:gravel",
+    "minecraft:gravel",
+    "minecraft:gravel",
+    "minecraft:gravel"
+  ],
+  "result": {
+    "id": "minecraft:flint",
+    "count": 3
+  }
+}

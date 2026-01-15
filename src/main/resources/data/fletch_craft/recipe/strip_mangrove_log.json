@@ -1,0 +1,13 @@
+{
+  "type": "fletch_craft:fletching",
+  "group": "stripping",
+  "width": 1,
+  "height": 1,
+  "ingredients": [
+    "minecraft:mangrove_log"
+  ],
+  "result": {
+    "id": "minecraft:stripped_mangrove_log",
+    "count": 1
+  }
+}

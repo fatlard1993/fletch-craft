@@ -1,0 +1,18 @@
+{
+  "type": "fletch_craft:fletching",
+  "group": "arrows",
+  "width": 3,
+  "height": 2,
+  "ingredients": [
+    "minecraft:glowstone_dust",
+    "minecraft:glowstone_dust",
+    "minecraft:glowstone_dust",
+    "minecraft:arrow",
+    "minecraft:arrow",
+    "minecraft:arrow"
+  ],
+  "result": {
+    "id": "minecraft:spectral_arrow",
+    "count": 3
+  }
+}

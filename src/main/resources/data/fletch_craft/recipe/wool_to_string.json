@@ -1,0 +1,13 @@
+{
+  "type": "fletch_craft:fletching",
+  "group": "string",
+  "width": 1,
+  "height": 1,
+  "ingredients": [
+    "#minecraft:wool"
+  ],
+  "result": {
+    "id": "minecraft:string",
+    "count": 9
+  }
+}

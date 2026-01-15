@@ -1,0 +1,14 @@
+{
+  "type": "fletch_craft:fletching",
+  "group": "archery",
+  "width": 1,
+  "height": 2,
+  "ingredients": [
+    "minecraft:redstone",
+    "minecraft:hay_block"
+  ],
+  "result": {
+    "id": "minecraft:target",
+    "count": 1
+  }
+}

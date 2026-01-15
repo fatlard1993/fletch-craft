@@ -1,0 +1,13 @@
+{
+  "type": "fletch_craft:fletching",
+  "group": "stripping",
+  "width": 1,
+  "height": 1,
+  "ingredients": [
+    "minecraft:warped_stem"
+  ],
+  "result": {
+    "id": "minecraft:stripped_warped_stem",
+    "count": 1
+  }
+}

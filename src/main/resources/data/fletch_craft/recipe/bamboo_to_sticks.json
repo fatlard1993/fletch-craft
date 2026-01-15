@@ -1,0 +1,13 @@
+{
+  "type": "fletch_craft:fletching",
+  "group": "sticks",
+  "width": 1,
+  "height": 1,
+  "ingredients": [
+    "minecraft:bamboo"
+  ],
+  "result": {
+    "id": "minecraft:stick",
+    "count": 2
+  }
+}

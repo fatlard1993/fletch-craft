@@ -1,0 +1,18 @@
+{
+  "type": "fletch_craft:fletching",
+  "group": "weapons",
+  "width": 2,
+  "height": 3,
+  "ingredients": [
+    "minecraft:stick",
+    "minecraft:string",
+    "minecraft:stick",
+    "minecraft:string",
+    "minecraft:stick",
+    "minecraft:string"
+  ],
+  "result": {
+    "id": "minecraft:bow",
+    "count": 1
+  }
+}

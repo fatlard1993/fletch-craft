@@ -1,0 +1,21 @@
+{
+  "type": "fletch_craft:fletching",
+  "group": "arrows",
+  "width": 3,
+  "height": 3,
+  "ingredients": [
+    "minecraft:flint",
+    "minecraft:flint",
+    "minecraft:flint",
+    "minecraft:stick",
+    "minecraft:stick",
+    "minecraft:stick",
+    "minecraft:feather",
+    "minecraft:feather",
+    "minecraft:feather"
+  ],
+  "result": {
+    "id": "minecraft:arrow",
+    "count": 16
+  }
+}
