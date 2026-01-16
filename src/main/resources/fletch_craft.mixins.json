@@ -3,7 +3,9 @@
 	"package": "justfatlard.fletch_craft.mixin",
 	"compatibilityLevel": "JAVA_21",
 	"mixins": [],
-	"client": [],
+	"client": [
+		"CraftingScreenMixin"
+	],
 	"injectors": {
 		"defaultRequire": 1
 	}
