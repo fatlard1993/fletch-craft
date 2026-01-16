@@ -9,8 +9,6 @@ import net.minecraft.screen.CraftingScreenHandler;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.text.Text;
 
-import justfatlard.fletch_craft.FletchCraft;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -126,14 +124,7 @@ public class FletchingRecipeBookWidget {
 		this.open = !this.open;
 	}
 
-	private static boolean loggedOnce = false;
-
 	public void render(DrawContext context, int mouseX, int mouseY, float delta, int guiX, int guiY) {
-		if (!loggedOnce) {
-			FletchCraft.LOGGER.info("FletchingRecipeBookWidget.render called - open={}, guiX={}, guiY={}, screenWidth={}, recipes={}",
-				open, guiX, guiY, screenWidth, recipes.size());
-			loggedOnce = true;
-		}
 		if (!open) return;
 
 		// Calculate available space to the left of the crafting GUI

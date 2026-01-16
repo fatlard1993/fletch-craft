@@ -1,6 +1,5 @@
 package justfatlard.fletch_craft.mixin;
 
-import justfatlard.fletch_craft.FletchCraft;
 import justfatlard.fletch_craft.client.FletchingRecipeBookWidget;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.ingame.CraftingScreen;
@@ -35,8 +34,6 @@ public abstract class CraftingScreenMixin extends HandledScreen<CraftingScreenHa
 	private void fletchCraft$onInit(CraftingScreenHandler handler, PlayerInventory inventory, Text title, CallbackInfo ci) {
 		// Check if this is a fletching table by title
 		String titleString = title.getString();
-		FletchCraft.LOGGER.info("CraftingScreen created with title: '{}' (contains fletching: {})",
-			titleString, titleString.toLowerCase().contains("fletching"));
 		this.isFletchingTable = titleString.toLowerCase().contains("fletching");
 	}
 

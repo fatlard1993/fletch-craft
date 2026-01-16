@@ -5,8 +5,8 @@ A Minecraft Fabric mod that makes the fletching table functional as a specialize
 ## Features
 
 - **Functional Fletching Table**: Right-click the fletching table to open a 3x3 crafting interface
-- **Built-in Recipe Book**: Toggle the recipe book to see all available recipes with clickable icons
-- **Ghost Recipe Preview**: Click any recipe to see a preview of required ingredients
+- **Server-Side Compatible**: Install on server only - vanilla clients can connect and use the fletching table
+- **Optional Client Enhancement**: When installed client-side, adds a custom recipe book showing fletching recipes
 - **Shift-Click Support**: Shift-click recipes to fill the grid with maximum available ingredients
 
 ## Recipes
@@ -41,10 +41,12 @@ A Minecraft Fabric mod that makes the fletching table functional as a specialize
 
 ## Requirements
 
-- Minecraft 1.21.x
+- Minecraft 1.21.4
 - Fabric Loader 0.16.0+
 - Fabric API
 - Java 21+
+
+Note: The mod includes sgui for server-side GUI rendering, allowing vanilla clients to use the fletching table without needing the mod installed.
 
 ## License
 
