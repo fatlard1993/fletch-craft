@@ -41,7 +41,7 @@ A Minecraft Fabric mod that makes the fletching table functional as a specialize
 
 ## Requirements
 
-- Minecraft 1.21.4
+- Minecraft 1.21.x
 - Fabric Loader 0.16.0+
 - Fabric API
 - Java 21+
