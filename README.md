@@ -2,12 +2,16 @@
 
 A Minecraft Fabric mod that makes the fletching table functional as a specialized crafting station for arrow-making, bow crafting, and wood processing.
 
+## 🎯 Key Feature: Works Server-Only!
+
+**Install this mod on your server only** - vanilla clients can connect without any mods and use the fletching table perfectly! The GUI renders server-side, so all players see and can use the fletching interface.
+
 ## Features
 
 - **Functional Fletching Table**: Right-click the fletching table to open a 3x3 crafting interface
-- **Server-Side Compatible**: Install on server only - vanilla clients can connect and use the fletching table
-- **Optional Client Enhancement**: When installed client-side, adds a custom recipe book showing fletching recipes
-- **Shift-Click Support**: Shift-click recipes to fill the grid with maximum available ingredients
+- **Server-Side GUI**: No client mods required - vanilla players can use all features
+- **Optional Client Enhancement**: If installed on client too, adds a recipe book with all fletching recipes
+- **Shift-Click Support**: With client mod, shift-click recipes to auto-fill the grid
 
 ## Recipes
 
@@ -35,9 +39,15 @@ A Minecraft Fabric mod that makes the fletching table functional as a specialize
 
 ## Installation
 
-1. Install [Fabric Loader](https://fabricmc.net/use/installer/) for Minecraft 1.21.x
-2. Install [Fabric API](https://modrinth.com/mod/fabric-api)
-3. Download the mod jar and place it in your `mods` folder
+### Server-Only (Recommended)
+1. Install [Fabric Loader](https://fabricmc.net/use/installer/) on your server
+2. Install [Fabric API](https://modrinth.com/mod/fabric-api) on your server
+3. Download the mod jar and place it in your server's `mods` folder
+4. **That's it!** Vanilla clients can now connect and use the fletching table
+
+### Client + Server (For Recipe Book)
+1. Follow the server installation above
+2. Optionally install the mod on your client for the recipe book feature
 
 ## Requirements
 
@@ -46,7 +56,7 @@ A Minecraft Fabric mod that makes the fletching table functional as a specialize
 - Fabric API
 - Java 21+
 
-Note: The mod includes sgui for server-side GUI rendering, allowing vanilla clients to use the fletching table without needing the mod installed.
+**Server Compatibility Note**: This mod uses server-side GUI rendering (sgui), which means vanilla clients can connect to your server and use the fletching table without installing any mods!
 
 ## License
 
