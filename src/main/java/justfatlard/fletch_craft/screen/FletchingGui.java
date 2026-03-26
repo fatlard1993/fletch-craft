@@ -23,15 +23,14 @@ import java.util.List;
 import java.util.Optional;
 
 public class FletchingGui extends SimpleGui implements InventoryChangedListener {
-	private static final Text TITLE = Text.translatable("container.fletch_craft.fletching");
+	// Opens as ScreenHandlerType.CRAFTING so vanilla clients see a crafting screen.
+	// The client mixin detects fletching tables by matching this title key.
+	private static final Text TITLE = Text.translatable(FletchCraft.TITLE_KEY);
 
-	// Slot indices for CRAFTING screen type
-	// 0 = result, 1-9 = crafting grid (row by row)
 	private static final int RESULT_SLOT = 0;
 	private static final int GRID_START = 1;
 	private static final int GRID_SIZE = 9;
 
-	// Real inventory backing for the crafting grid
 	private final SimpleInventory craftingInventory = new SimpleInventory(9);
 	private final ServerWorld serverWorld;
 	private ItemStack resultStack = ItemStack.EMPTY;
@@ -42,50 +41,42 @@ public class FletchingGui extends SimpleGui implements InventoryChangedListener 
 		this.setTitle(TITLE);
 		this.serverWorld = world;
 
-		// Listen for inventory changes to update result
 		this.craftingInventory.addListener(this);
 
-		// Redirect crafting grid slots to our real inventory
 		for (int i = 0; i < 9; i++) {
 			this.setSlotRedirect(GRID_START + i, new Slot(craftingInventory, i, 0, 0));
 		}
 
-		// Initialize result display
 		updateResult();
 	}
 
 	@Override
 	public void onInventoryChanged(Inventory inventory) {
-		// Called when items in the crafting inventory change
 		updateResult();
 	}
 
 	@Override
 	public boolean onAnyClick(int index, ClickType type, SlotActionType action) {
-		// Allow manipulation of redirected slots (the crafting grid)
 		return true;
 	}
 
 	@Override
 	public boolean onClick(int index, ClickType type, SlotActionType action, GuiElementInterface element) {
-		// Handle result slot specially
 		if (index == RESULT_SLOT) {
 			if (!resultStack.isEmpty() && currentRecipe != null) {
-				handleResultTake(action);
+				handleResultTake(action, type);
 			}
 			return true;
 		}
 
-		// Let redirected slots handle their own clicks
 		if (index >= GRID_START && index < GRID_START + GRID_SIZE) {
-			return false; // Let slot redirect handle it
+			return false;
 		}
 
-		// Let parent handle player inventory slots
 		return super.onClick(index, type, action, element);
 	}
 
-	private void handleResultTake(SlotActionType action) {
+	private void handleResultTake(SlotActionType action, ClickType clickType) {
 		if (currentRecipe == null || resultStack.isEmpty()) {
 			return;
 		}
@@ -93,7 +84,6 @@ public class FletchingGui extends SimpleGui implements InventoryChangedListener 
 		ItemStack cursor = this.screenHandler.getCursorStack();
 
 		if (action == SlotActionType.PICKUP) {
-			// Single craft - left click
 			if (cursor.isEmpty()) {
 				this.screenHandler.setCursorStack(resultStack.copy());
 				consumeIngredients();
@@ -103,7 +93,6 @@ public class FletchingGui extends SimpleGui implements InventoryChangedListener 
 				consumeIngredients();
 			}
 		} else if (action == SlotActionType.QUICK_MOVE) {
-			// Shift-click - craft as many as possible
 			int maxCrafts = calculateMaxCrafts();
 			for (int i = 0; i < maxCrafts; i++) {
 				if (!canCraft()) break;
@@ -114,6 +103,21 @@ public class FletchingGui extends SimpleGui implements InventoryChangedListener 
 				}
 				consumeIngredients();
 				updateResult();
+			}
+		} else if (action == SlotActionType.THROW) {
+			ItemStack crafted = resultStack.copy();
+			this.player.dropItem(crafted, false);
+			consumeIngredients();
+		} else if (action == SlotActionType.SWAP && clickType.numKey) {
+			int hotbarSlot = clickType.value;
+			ItemStack hotbarStack = this.player.getInventory().getStack(hotbarSlot);
+			if (hotbarStack.isEmpty()) {
+				this.player.getInventory().setStack(hotbarSlot, resultStack.copy());
+				consumeIngredients();
+			} else if (ItemStack.areItemsAndComponentsEqual(hotbarStack, resultStack) &&
+					   hotbarStack.getCount() + resultStack.getCount() <= hotbarStack.getMaxCount()) {
+				hotbarStack.increment(resultStack.getCount());
+				consumeIngredients();
 			}
 		}
 
@@ -129,12 +133,19 @@ public class FletchingGui extends SimpleGui implements InventoryChangedListener 
 	private int calculateMaxCrafts() {
 		if (currentRecipe == null) return 0;
 
+		FletchingRecipe recipe = currentRecipe.value();
+		int width = recipe.getWidth();
+		int height = recipe.getHeight();
 		int maxCrafts = Integer.MAX_VALUE;
-		for (int i = 0; i < 9; i++) {
-			ItemStack stack = craftingInventory.getStack(i);
-			if (!stack.isEmpty()) {
-				maxCrafts = Math.min(maxCrafts, stack.getCount());
-			}
+
+		for (int i = 0; i < recipe.getIngredients().size(); i++) {
+			if (recipe.getIngredients().get(i).isEmpty()) continue;
+			int gridX = i % width;
+			int gridY = i / width;
+			int slotIndex = gridX + gridY * 3;
+			ItemStack stack = craftingInventory.getStack(slotIndex);
+			if (stack.isEmpty()) return 0;
+			maxCrafts = Math.min(maxCrafts, stack.getCount());
 		}
 		return maxCrafts == Integer.MAX_VALUE ? 0 : maxCrafts;
 	}
@@ -179,16 +190,21 @@ public class FletchingGui extends SimpleGui implements InventoryChangedListener 
 
 	@Override
 	public void onClose() {
-		// Remove listener
 		this.craftingInventory.removeListener(this);
 
-		// Drop any items left in the crafting grid
+		ItemStack cursorStack = this.screenHandler.getCursorStack();
+		if (!cursorStack.isEmpty()) {
+			this.player.dropItem(cursorStack, false);
+			this.screenHandler.setCursorStack(ItemStack.EMPTY);
+		}
+
 		for (int i = 0; i < 9; i++) {
 			ItemStack stack = craftingInventory.getStack(i);
 			if (!stack.isEmpty()) {
 				this.player.dropItem(stack, false);
 			}
 		}
+		craftingInventory.clear();
 		super.onClose();
 	}
 }

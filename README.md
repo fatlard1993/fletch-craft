@@ -2,9 +2,9 @@
 
 A Minecraft Fabric mod that makes the fletching table functional as a specialized crafting station for arrow-making, bow crafting, and wood processing.
 
-## 🎯 Key Feature: Works Server-Only!
+## Key Feature: Works Without Client Mods
 
-**Install this mod on your server only** - vanilla clients can connect without any mods and use the fletching table perfectly! The GUI renders server-side, so all players see and can use the fletching interface.
+The core fletching table GUI renders entirely server-side using [sgui](https://github.com/Patbox/sgui) (bundled in the mod jar — no separate install needed). Install it on your server and vanilla clients can connect and use the fletching table without installing anything. Optionally install on the client too for a recipe book overlay.
 
 ## Features
 
@@ -21,17 +21,17 @@ A Minecraft Fabric mod that makes the fletching table functional as a specialize
 
 ### Weapons
 - **Bow**: 3 sticks + 3 string (2x3 pattern)
-- **Crossbow**: 3 sticks + 2 iron nuggets + 2 string (simplified recipe)
+- **Crossbow**: 3 sticks + 1 iron nugget + 2 string (simplified recipe)
 
 ### Wood Processing
-- **Strip any log**: Place any log to get its stripped variant
+- **Strip any log**: Place any log to get its stripped variant (oak, birch, spruce, jungle, acacia, dark oak, cherry, mangrove, pale oak, crimson, warped)
 - **Sticks from stripped logs** (16): Any stripped log
 - **Sticks from planks** (3): Any plank
 - **Sticks from bamboo** (2): Bamboo
 - **Strip bamboo block**: Bamboo block → stripped bamboo block
 
 ### Materials
-- **Flint**: 4 gravel in 2x2 pattern
+- **Flint** (3): 4 gravel in 2x2 pattern
 - **String** (9): Any wool color
 
 ### Archery
@@ -51,12 +51,16 @@ A Minecraft Fabric mod that makes the fletching table functional as a specialize
 
 ## Requirements
 
-- Minecraft 1.21.x
-- Fabric Loader 0.16.0+
+- Minecraft 1.21.11+
+- Fabric Loader 0.18.0+
 - Fabric API
 - Java 21+
 
-**Server Compatibility Note**: This mod uses server-side GUI rendering (sgui), which means vanilla clients can connect to your server and use the fletching table without installing any mods!
+**Architecture**: The fletching GUI is rendered server-side via sgui. The optional client component adds a recipe book overlay by mixing into the crafting screen.
+
+## Customization
+
+All recipes are data-driven JSON files in `data/fletch_craft/recipe/`. Server admins can add, remove, or modify fletching recipes via datapacks without touching code.
 
 ## License
 

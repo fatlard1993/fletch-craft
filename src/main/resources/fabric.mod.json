@@ -3,7 +3,7 @@
 	"id": "fletch_craft",
 	"version": "${version}",
 	"name": "Fletch Craft",
-	"description": "Makes the fletching table functional as a specialized crafting table for arrow-making and wood processing recipes.",
+	"description": "Makes the fletching table functional as a specialized crafting station for arrows, bows, crossbows, and wood processing. Data-driven recipes — customizable via datapacks.",
 	"authors": ["justfatlard"],
 	"contact": {
 		"homepage": "https://github.com/justfatlard/fletch-craft",
@@ -19,9 +19,9 @@
 	},
 	"mixins": ["fletch_craft.mixins.json"],
 	"depends": {
-		"fabricloader": ">=0.16.0",
+		"fabricloader": ">=0.18.0",
 		"fabric-api": "*",
-		"minecraft": "~1.21",
+		"minecraft": ">=1.21.11",
 		"java": ">=21"
 	}
 }

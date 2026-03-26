@@ -8,7 +8,9 @@ import net.minecraft.recipe.input.CraftingRecipeInput;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.world.World;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 public class FletchingRecipe implements Recipe<CraftingRecipeInput> {
 	public static final RecipeBookCategory FLETCHING_CATEGORY = new RecipeBookCategory();
@@ -20,10 +22,17 @@ public class FletchingRecipe implements Recipe<CraftingRecipeInput> {
 	private final int height;
 
 	public FletchingRecipe(String group, int width, int height, List<Ingredient> ingredients, ItemStack result) {
+		if (width < 1 || width > 3 || height < 1 || height > 3) {
+			throw new IllegalArgumentException("Recipe dimensions must be 1-3, got " + width + "x" + height);
+		}
+		if (ingredients.size() != width * height) {
+			throw new IllegalArgumentException(
+				"Ingredient count " + ingredients.size() + " does not match " + width + "x" + height);
+		}
 		this.group = group;
 		this.width = width;
 		this.height = height;
-		this.ingredients = ingredients;
+		this.ingredients = Collections.unmodifiableList(ingredients);
 		this.result = result;
 	}
 
@@ -89,13 +98,12 @@ public class FletchingRecipe implements Recipe<CraftingRecipeInput> {
 
 	@Override
 	public IngredientPlacement getIngredientPlacement() {
-		// Create ingredient placement for recipe book display
 		if (this.ingredients.isEmpty()) {
 			return IngredientPlacement.NONE;
 		}
 		return IngredientPlacement.forMultipleSlots(
 			this.ingredients.stream()
-				.map(java.util.Optional::of)
+				.map(ing -> ing.isEmpty() ? Optional.<Ingredient>empty() : Optional.of(ing))
 				.toList()
 		);
 	}
@@ -128,6 +136,6 @@ public class FletchingRecipe implements Recipe<CraftingRecipeInput> {
 
 	@Override
 	public boolean isIgnoredInRecipeBook() {
-		return false;
+		return true;
 	}
 }

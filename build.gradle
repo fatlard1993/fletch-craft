@@ -1,12 +1,13 @@
 plugins {
 	id 'fabric-loom' version '1.13-SNAPSHOT'
-	id 'maven-publish'
 }
 
 sourceCompatibility = JavaVersion.VERSION_21
 targetCompatibility = JavaVersion.VERSION_21
 
-archivesBaseName = project.archives_base_name
+base {
+	archivesName = project.archives_base_name
+}
 version = project.mod_version
 group = project.maven_group
 
@@ -21,7 +22,7 @@ dependencies {
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
 	// Server-side GUI library
-	modImplementation include("eu.pb4:sgui:1.12.0+1.21.11")
+	modImplementation include("eu.pb4:sgui:${project.sgui_version}")
 }
 
 processResources {
@@ -43,17 +44,7 @@ java {
 
 jar {
 	from("LICENSE") {
-		rename { "${it}_${project.archivesBaseName}"}
+		rename { "${it}_${project.archives_base_name}"}
 	}
 }
 
-publishing {
-	publications {
-		mavenJava(MavenPublication) {
-			from components.java
-		}
-	}
-
-	repositories {
-	}
-}
