@@ -1,141 +1,95 @@
 package justfatlard.fletch_craft.recipe;
 
 import justfatlard.fletch_craft.FletchCraft;
-import net.minecraft.item.ItemStack;
-import net.minecraft.recipe.*;
-import net.minecraft.recipe.book.RecipeBookCategory;
-import net.minecraft.recipe.input.CraftingRecipeInput;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.world.World;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
+import net.minecraft.world.item.crafting.*;
+import net.minecraft.world.item.crafting.display.RecipeDisplay;
+import net.minecraft.world.level.Level;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
-public class FletchingRecipe implements Recipe<CraftingRecipeInput> {
-	public static final RecipeBookCategory FLETCHING_CATEGORY = new RecipeBookCategory();
+public class FletchingRecipe implements Recipe<CraftingInput> {
+    private final List<Ingredient> ingredients;
+    private final ItemStackTemplate resultTemplate;
+    private final String group;
+    private final int width;
+    private final int height;
 
-	private final List<Ingredient> ingredients;
-	private final ItemStack result;
-	private final String group;
-	private final int width;
-	private final int height;
+    public FletchingRecipe(String group, int width, int height, List<Ingredient> ingredients, ItemStackTemplate resultTemplate) {
+        this.group = group;
+        this.width = width;
+        this.height = height;
+        this.ingredients = Collections.unmodifiableList(ingredients);
+        this.resultTemplate = resultTemplate;
+    }
 
-	public FletchingRecipe(String group, int width, int height, List<Ingredient> ingredients, ItemStack result) {
-		if (width < 1 || width > 3 || height < 1 || height > 3) {
-			throw new IllegalArgumentException("Recipe dimensions must be 1-3, got " + width + "x" + height);
-		}
-		if (ingredients.size() != width * height) {
-			throw new IllegalArgumentException(
-				"Ingredient count " + ingredients.size() + " does not match " + width + "x" + height);
-		}
-		this.group = group;
-		this.width = width;
-		this.height = height;
-		this.ingredients = Collections.unmodifiableList(ingredients);
-		this.result = result;
-	}
+    @Override
+    public boolean matches(CraftingInput input, Level world) {
+        if (input.width() < this.width || input.height() < this.height) return false;
+        for (int ox = 0; ox <= input.width() - this.width; ox++) {
+            for (int oy = 0; oy <= input.height() - this.height; oy++) {
+                if (matchesExact(input, ox, oy)) return true;
+            }
+        }
+        return false;
+    }
 
-	@Override
-	public boolean matches(CraftingRecipeInput input, World world) {
-		if (input.getWidth() < this.width || input.getHeight() < this.height) {
-			return false;
-		}
-		return matchesShifted(input);
-	}
+    private boolean matchesExact(CraftingInput input, int ox, int oy) {
+        for (int x = 0; x < input.width(); x++) {
+            for (int y = 0; y < input.height(); y++) {
+                int rx = x - ox, ry = y - oy;
+                ItemStack stack = input.getItem(x + y * input.width());
+                if (rx >= 0 && ry >= 0 && rx < width && ry < height) {
+                    int idx = rx + ry * width;
+                    if (idx < ingredients.size()) {
+                        if (!ingredients.get(idx).test(stack)) return false;
+                    } else if (!stack.isEmpty()) return false;
+                } else if (!stack.isEmpty()) return false;
+            }
+        }
+        return true;
+    }
 
-	private boolean matchesShifted(CraftingRecipeInput input) {
-		for (int offsetX = 0; offsetX <= input.getWidth() - this.width; offsetX++) {
-			for (int offsetY = 0; offsetY <= input.getHeight() - this.height; offsetY++) {
-				if (matchesExact(input, offsetX, offsetY)) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
+    @Override
+    public ItemStack assemble(CraftingInput input) {
+        return this.resultTemplate.create();
+    }
 
-	private boolean matchesExact(CraftingRecipeInput input, int offsetX, int offsetY) {
-		for (int x = 0; x < input.getWidth(); x++) {
-			for (int y = 0; y < input.getHeight(); y++) {
-				int recipeX = x - offsetX;
-				int recipeY = y - offsetY;
+    @Override
+    public boolean showNotification() { return false; }
 
-				ItemStack stackInSlot = input.getStackInSlot(x + y * input.getWidth());
+    @Override
+    public RecipeSerializer<? extends Recipe<CraftingInput>> getSerializer() {
+        return FletchCraft.FLETCHING_SERIALIZER;
+    }
 
-				if (recipeX >= 0 && recipeY >= 0 && recipeX < this.width && recipeY < this.height) {
-					int index = recipeX + recipeY * this.width;
-					if (index < this.ingredients.size()) {
-						Ingredient ingredient = this.ingredients.get(index);
-						if (!ingredient.test(stackInSlot)) {
-							return false;
-						}
-					} else if (!stackInSlot.isEmpty()) {
-						return false;
-					}
-				} else if (!stackInSlot.isEmpty()) {
-					return false;
-				}
-			}
-		}
-		return true;
-	}
+    @Override
+    public RecipeType<? extends Recipe<CraftingInput>> getType() {
+        return FletchCraft.FLETCHING_RECIPE_TYPE;
+    }
 
-	@Override
-	public ItemStack craft(CraftingRecipeInput input, RegistryWrapper.WrapperLookup lookup) {
-		return this.result.copy();
-	}
+    @Override
+    public PlacementInfo placementInfo() {
+        if (ingredients.isEmpty()) return PlacementInfo.NOT_PLACEABLE;
+        return PlacementInfo.create(ingredients);
+    }
 
-	@Override
-	public RecipeSerializer<FletchingRecipe> getSerializer() {
-		return FletchingRecipeSerializer.INSTANCE;
-	}
+    @Override
+    public RecipeBookCategory recipeBookCategory() {
+        return FletchCraft.FLETCHING_CATEGORY;
+    }
 
-	@Override
-	public RecipeType<FletchingRecipe> getType() {
-		return FletchCraft.FLETCHING_RECIPE_TYPE;
-	}
+    @Override
+    public List<RecipeDisplay> display() { return List.of(); }
 
-	@Override
-	public IngredientPlacement getIngredientPlacement() {
-		if (this.ingredients.isEmpty()) {
-			return IngredientPlacement.NONE;
-		}
-		return IngredientPlacement.forMultipleSlots(
-			this.ingredients.stream()
-				.map(ing -> ing.isEmpty() ? Optional.<Ingredient>empty() : Optional.of(ing))
-				.toList()
-		);
-	}
+    @Override
+    public String group() { return group; }
 
-	@Override
-	public RecipeBookCategory getRecipeBookCategory() {
-		return FLETCHING_CATEGORY;
-	}
-
-	@Override
-	public String getGroup() {
-		return this.group;
-	}
-
-	public List<Ingredient> getIngredients() {
-		return this.ingredients;
-	}
-
-	public ItemStack getResult() {
-		return this.result;
-	}
-
-	public int getWidth() {
-		return this.width;
-	}
-
-	public int getHeight() {
-		return this.height;
-	}
-
-	@Override
-	public boolean isIgnoredInRecipeBook() {
-		return true;
-	}
+    public List<Ingredient> getIngredients() { return ingredients; }
+    public ItemStack getResult() { return resultTemplate.create(); }
+    public ItemStackTemplate getResultTemplate() { return resultTemplate; }
+    public int getWidth() { return width; }
+    public int getHeight() { return height; }
 }
