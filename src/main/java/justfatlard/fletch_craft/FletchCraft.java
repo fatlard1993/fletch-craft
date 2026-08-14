@@ -1,5 +1,6 @@
 package justfatlard.fletch_craft;
 
+import net.minecraft.util.Prediction;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -50,7 +51,6 @@ public class FletchCraft implements ModInitializer {
     // Recipe book category
     public static final RecipeBookCategory FLETCHING_CATEGORY = new RecipeBookCategory();
 
-    // RecipeSerializer is a record in 26.1
     private static final MapCodec<FletchingRecipe> RECIPE_CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
         Codec.STRING.optionalFieldOf("group", "").forGetter(FletchingRecipe::group),
         Codec.INT.fieldOf("width").forGetter(FletchingRecipe::getWidth),
@@ -125,14 +125,14 @@ public class FletchCraft implements ModInitializer {
             handleResultTake(player, true);
         });
 
-        // Container removed — return items
+        // Container removed: return items
         PandoricalApi.screens().onContainerRemoved(SCREEN_TYPE, player -> {
             SimpleContainer container = craftingContainers.remove(player.getUUID());
             if (container != null) {
-                for (int i = 0; i < container.getContainerSize(); i++) {
+                for (int i = 1; i < container.getContainerSize(); i++) {
                     ItemStack stack = container.getItem(i);
                     if (!stack.isEmpty()) {
-                        if (!player.getInventory().add(stack.copy())) player.drop(stack.copy(), false);
+                        if (!player.getInventory().add(stack.copy())) player.drop(stack.copy(), false, Prediction.SERVER_ONLY);
                     }
                 }
                 container.clearContent();
@@ -172,7 +172,7 @@ public class FletchCraft implements ModInitializer {
         builder.panel("bg", 0, 0, 280, 180, Map.of("border", "beveled"));
         builder.text("title", 8, 6, Map.of("text", "Fletching Table", "color", "#404040"));
 
-        // Crafting grid (3x3) — slots 1-9
+        // Crafting grid (3x3): slots 1-9
         builder.text("grid_label", 8, 18, Map.of("text", "Crafting", "color", "#404040"));
         builder.inventoryGrid("craft_grid", 8, 28, 3, 3, 1);
 
@@ -213,7 +213,7 @@ public class FletchCraft implements ModInitializer {
         for (int i = 1; i <= 9; i++) {
             ItemStack stack = container.getItem(i);
             if (!stack.isEmpty()) {
-                if (!player.getInventory().add(stack.copy())) player.drop(stack.copy(), false);
+                if (!player.getInventory().add(stack.copy())) player.drop(stack.copy(), false, Prediction.SERVER_ONLY);
                 container.setItem(i, ItemStack.EMPTY);
             }
         }
@@ -276,12 +276,12 @@ public class FletchCraft implements ModInitializer {
             for (int i = 0; i < 64; i++) {
                 if (container.getItem(0).isEmpty()) break;
                 ItemStack crafted = container.getItem(0).copy();
-                if (!player.getInventory().add(crafted)) player.drop(crafted, false);
+                if (!player.getInventory().add(crafted)) player.drop(crafted, false, Prediction.SERVER_ONLY);
                 consumeIngredients(container);
                 updateResultFromContainer(container, player);
             }
         } else {
-            if (!player.getInventory().add(result.copy())) player.drop(result.copy(), false);
+            if (!player.getInventory().add(result.copy())) player.drop(result.copy(), false, Prediction.SERVER_ONLY);
             consumeIngredients(container);
             updateResultFromContainer(container, player);
         }

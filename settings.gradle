@@ -9,3 +9,6 @@ pluginManagement {
 }
 
 rootProject.name = 'fletch-craft'
+
+include ':pandorical'
+project(':pandorical').projectDir = new File(rootProject.projectDir, '../pandorical')
