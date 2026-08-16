@@ -18,12 +18,6 @@ A Fabric mod that makes the fletching table functional as a specialized crafting
   - **String** (9): any wool color
   - **Target Block**: redstone + hay bale
 
-## Requirements
-
-- Targets the Minecraft, Fabric Loader, and Fabric API versions declared in this mod's `gradle.properties`. Check there for the exact currently-supported version
-- Java version as declared in `fabric.mod.json`'s `depends` block
-- Pandorical (see below)
-
 ## Pandorical
 
 Fletch Craft's entire fletching table interface (the crafting grid, result slot, and recipe browser) is a Pandorical container screen. The mod checks for the `screens` capability when a player opens a fletching table and, without it, tells the player fletching requires Pandorical instead of opening anything.
@@ -32,7 +26,7 @@ Fletch Craft's entire fletching table interface (the crafting grid, result slot,
 
 ## Installation
 
-Install alongside its declared dependencies (see `fabric.mod.json`), including Pandorical on both the server and every connecting client.
+Install server-side alongside its declared dependencies (see `fabric.mod.json`); connecting clients need only Pandorical. Version targets live in `gradle.properties` (Minecraft, loader, Fabric API) and `fabric.mod.json` (Java).
 
 ## Customization
 
@@ -40,4 +34,4 @@ All recipes are data-driven JSON files in `data/fletch_craft/recipe/`. Server ad
 
 ## License
 
-This mod is licensed under the MIT License. See [LICENSE](LICENSE) for details.
+MIT, see [LICENSE](LICENSE).
