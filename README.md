@@ -18,6 +18,14 @@ A Fabric mod that makes the fletching table functional as a specialized crafting
   - **String** (9): any wool color
   - **Target Block**: redstone + hay bale
 
+## Learning It
+
+The fletching table has sat in fletchers' houses for years doing nothing, so nobody thinks to right-click one. And vanilla has no recipe for flint at all: you break gravel and hope.
+
+With [village-quests](https://github.com/justfatlard/village-quests) installed, a fletcher will tell you the trick and ask for twelve flint to prove it took. Four gravel in, three flint out, every time.
+
+Optional and guarded: without village-quests the mod behaves exactly as before.
+
 ## Pandorical
 
 Fletch Craft's entire fletching table interface (the crafting grid, result slot, and recipe browser) is a Pandorical container screen. The mod checks for the `screens` capability when a player opens a fletching table and, without it, tells the player fletching requires Pandorical instead of opening anything.

@@ -76,6 +76,11 @@ public class FletchCraft implements ModInitializer {
 
     @Override
     public void onInitialize() {
+		// Guarded class load: FletchQuestRegistration names village-quests types.
+		if (net.fabricmc.loader.api.FabricLoader.getInstance().isModLoaded("village-quests-justfatlard")) {
+			justfatlard.fletch_craft.integration.FletchQuestRegistration.register();
+		}
+
         Registry.register(BuiltInRegistries.RECIPE_SERIALIZER,
             Identifier.fromNamespaceAndPath(MOD_ID, "fletching"), FLETCHING_SERIALIZER);
         Registry.register(BuiltInRegistries.RECIPE_BOOK_CATEGORY,

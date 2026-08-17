@@ -3,14 +3,18 @@
 	"id": "fletch_craft",
 	"version": "${version}",
 	"name": "Fletch Craft",
-	"description": "Makes the fletching table functional as a specialized crafting station for arrows, bows, crossbows, and wood processing. Data-driven recipes — customizable via datapacks.",
-	"authors": ["justfatlard"],
+	"description": "Makes the fletching table functional as a specialized crafting station for arrows, bows, crossbows, and wood processing. Data-driven recipes \u2014 customizable via datapacks.",
+	"authors": [
+		"justfatlard"
+	],
 	"contact": {},
 	"license": "MIT",
 	"icon": "assets/fletch_craft/icon.png",
 	"environment": "*",
 	"entrypoints": {
-		"main": ["justfatlard.fletch_craft.FletchCraft"]
+		"main": [
+			"justfatlard.fletch_craft.FletchCraft"
+		]
 	},
 	"depends": {
 		"fabricloader": ">=0.18.4",
@@ -18,5 +22,8 @@
 		"minecraft": ">=26.2",
 		"java": ">=25",
 		"pandorical": ">=1.0.0"
+	},
+	"suggests": {
+		"village-quests-justfatlard": "*"
 	}
 }
