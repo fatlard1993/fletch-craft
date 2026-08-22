@@ -12,3 +12,7 @@ rootProject.name = 'fletch-craft'
 
 include ':pandorical'
 project(':pandorical').projectDir = new File(rootProject.projectDir, '../pandorical')
+
+// Soft: compiled against for the fletching lessons, guarded at runtime.
+include ':village-quests'
+project(':village-quests').projectDir = new File(rootProject.projectDir, '../village-quests')
