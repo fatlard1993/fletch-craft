@@ -22,7 +22,7 @@ A Fabric mod that makes the fletching table functional as a specialized crafting
 
 The fletching table has sat in fletchers' houses for years doing nothing, so nobody thinks to right-click one. And vanilla has no recipe for flint at all: you break gravel and hope.
 
-With [village-quests](https://github.com/justfatlard/village-quests) installed, a fletcher will tell you the trick and ask for twelve flint to prove it took. Four gravel in, three flint out, every time.
+With [village-quests](https://github.com/fatlard1993/village-quests) installed, a fletcher will tell you the trick and ask for twelve flint to prove it took. Four gravel in, three flint out, every time.
 
 Optional and guarded: without village-quests the mod behaves exactly as before.
 
