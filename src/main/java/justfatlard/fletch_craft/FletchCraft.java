@@ -163,7 +163,10 @@ public class FletchCraft implements ModInitializer {
         ScreenBuilder builder = new ScreenBuilder(SCREEN_TYPE)
             .size(width, height)
             .title("Fletching Table")
-            .container(10, true);
+            .container(10, true)
+            // What this bench is, so a recipe book can offer its recipes. The screen draws no
+            // browser of its own; saying what it crafts is the whole of its part in that.
+            .recipeStation(Identifier.fromNamespaceAndPath(MOD_ID, "fletching").toString());
 
         builder.panel("bg", 0, 0, width, height, Map.of("border", "beveled"));
         builder.text("title", MARGIN, 6, Map.of("text", "Fletching Table", "color", "#404040"));
