@@ -1,11 +1,11 @@
 # Fletch Craft
 
-A Fabric mod that makes the fletching table functional as a specialized crafting station for arrows, bows, crossbows, and wood processing, with its own dedicated crafting interface and an in-menu recipe browser.
+A Fabric mod that makes the fletching table functional as a specialized crafting station for arrows, bows, crossbows, and wood processing, with its own dedicated crafting bench.
 
 ## Features
 
-- **Functional Fletching Table**: Right-click a fletching table to open a dedicated crafting screen with its own 3x3 grid, result slot, and recipe browser panel
-- **Recipe Browser**: Click any recipe in the panel to auto-fill the grid from your inventory (shift-click to fill as many sets as your materials allow)
+- **Functional Fletching Table**: Right-click a fletching table to open a plain crafting bench - a 3x3 grid and a result slot, and nothing else on it
+- **Visible to recipe books**: fletching recipes ship a shaped display, so a client can see what they are without this mod installed. They carry their own book category, which is what keeps them out of an ordinary workbench's book - they cannot be crafted there
 - **Data-Driven Recipes**: All fletching recipes are JSON files under `data/fletch_craft/recipe/`, customizable via datapacks without touching code
 - Included recipes:
   - **Arrows** (16): flint + sticks + feathers

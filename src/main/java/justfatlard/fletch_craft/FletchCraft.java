@@ -72,7 +72,6 @@ public class FletchCraft implements ModInitializer {
 
     // Per-player crafting state
     private static final Map<UUID, SimpleContainer> craftingContainers = new ConcurrentHashMap<>();
-    private static final Map<UUID, List<RecipeHolder<FletchingRecipe>>> cachedRecipes = new ConcurrentHashMap<>();
 
     @Override
     public void onInitialize() {
@@ -106,17 +105,6 @@ public class FletchCraft implements ModInitializer {
     }
 
     private void registerScreenHandlers() {
-        // Recipe click
-        PandoricalApi.screens().onActionFallback(SCREEN_TYPE, (player, data) -> {
-            String componentId = data.get("_componentId");
-            if (componentId != null && componentId.startsWith("recipe_")) {
-                try {
-                    int idx = Integer.parseInt(componentId.substring(7));
-                    handleRecipeClick(player, idx, player.isShiftKeyDown());
-                } catch (NumberFormatException ignored) {}
-            }
-        });
-
         // Slot changes → update result
         PandoricalApi.screens().onSlotChange(SCREEN_TYPE, (player, slotIndex, stack) -> {
             if (slotIndex >= 1 && slotIndex <= 9) updateResult(player);
@@ -142,7 +130,6 @@ public class FletchCraft implements ModInitializer {
                 }
                 container.clearContent();
             }
-            cachedRecipes.remove(player.getUUID());
         });
 
         PandoricalApi.screens().onClose(SCREEN_TYPE, player -> {});
@@ -155,41 +142,23 @@ public class FletchCraft implements ModInitializer {
             return;
         }
 
-        ServerLevel world = (ServerLevel) player.level();
-        RecipeManager recipeManager = world.recipeAccess();
-
-        // Get all fletching recipes
-        List<RecipeHolder<FletchingRecipe>> recipes = recipeManager.getRecipes().stream()
-            .filter(h -> h.value() instanceof FletchingRecipe)
-            .map(h -> (RecipeHolder<FletchingRecipe>) (RecipeHolder<?>) h)
-            .toList();
-        cachedRecipes.put(player.getUUID(), recipes);
-
         // Slot 0 = result (read-only), slots 1-9 = crafting grid
         SimpleContainer container = new SimpleContainer(10);
         craftingContainers.put(player.getUUID(), container);
 
-        // Laid out from the parts rather than from constants that were once measured by hand.
-        // The old numbers put a nine-wide inventory at x=8 and the recipe panel at x=110, so
-        // sixty pixels of somebody's pack sat underneath the recipe list - and the panel ran to
-        // a fixed height whether there were four rows of recipes or none.
-        int cols = 8;
-        int shown = Math.min(recipes.size(), cols * MAX_RECIPE_ROWS);
-        int recipeRows = Math.max(1, (shown + cols - 1) / cols);
-
-        int recipePanelW = MARGIN + cols * CELL + MARGIN;
-        int recipePanelH = RECIPE_TITLE_H + recipeRows * CELL + MARGIN;
-        int recipeX = MARGIN + CRAFT_W + MARGIN;
-
-        int width = recipeX + recipePanelW + MARGIN;
-        int topH = Math.max(CRAFT_H, recipePanelH);
-        int invY = TOP_Y + topH + 16;
+        // A bench, and nothing else on it.
+        //
+        // This used to carry its own recipe list down the right-hand side: a grid of buttons
+        // that drew, and answered a click, and told you almost nothing - two letters of a
+        // result's name, which for a table whose output is mostly arrows read "St St St St".
+        // Browsing recipes is a solved problem and not this mod's to solve twice, so the panel
+        // is gone and the screen is what a fletching table always should have been, a crafting
+        // bench that happens to sit in a fletching table.
+        int width = MARGIN + 9 * CELL + MARGIN;
+        int invY = TOP_Y + CRAFT_H + 12;
         int hotbarY = invY + 3 * CELL + 4;
         int height = hotbarY + CELL + MARGIN;
-
-        // Centred under both columns: the pack is the widest thing here and the one people look
-        // at, so it sets its own place rather than being tucked under the left-hand column.
-        int invX = (width - 9 * CELL) / 2;
+        int invX = MARGIN;
 
         ScreenBuilder builder = new ScreenBuilder(SCREEN_TYPE)
             .size(width, height)
@@ -210,26 +179,6 @@ public class FletchCraft implements ModInitializer {
         // spent its whole width telling you it has no width.
         builder.button("result_take", MARGIN + 3 * CELL + 18, TOP_Y + 54, 26, 12,
             Map.of("label", "Take"));
-
-        // Recipe browser
-        builder.panel("recipe_panel", recipeX, TOP_Y - 6, recipePanelW, recipePanelH,
-            Map.of("background", "#CC000000", "border", "flat", "border_color", "#555555"));
-        builder.text("recipe_title", recipeX + MARGIN, TOP_Y - 2,
-            Map.of("text", "Fletching Recipes", "color", "#FFFFFF"));
-
-        for (int i = 0; i < shown; i++) {
-            RecipeHolder<FletchingRecipe> recipe = recipes.get(i);
-            int col = i % cols, row = i / cols;
-            int bx = recipeX + MARGIN + col * CELL;
-            int by = TOP_Y - 6 + RECIPE_TITLE_H + row * CELL;
-
-            // The button carries the click; the icon on top of it carries the meaning. The label
-            // used to be the first two letters of the result's name, which for a table whose
-            // recipes are mostly arrows and tipped arrows meant a grid reading "St St St St".
-            builder.button("recipe_" + i, bx, by, CELL, CELL, Map.of("label", ""));
-            builder.itemIcon("recipe_icon_" + i, bx + 1, by + 1,
-                BuiltInRegistries.ITEM.getKey(recipe.value().getResult().getItem()).toString(), 1);
-        }
 
         // Player inventory
         builder.inventoryGrid("player_inv", invX, invY, 3, 9, 10);
@@ -252,72 +201,6 @@ public class FletchCraft implements ModInitializer {
     /** Room for the "Fletching Recipes" heading above the grid of them. */
     private static final int RECIPE_TITLE_H = 18;
 
-    /** Enough recipes for any table worth browsing; past this the panel would outgrow a screen. */
-    private static final int MAX_RECIPE_ROWS = 8;
-
-    private static void handleRecipeClick(ServerPlayer player, int recipeIndex, boolean fillMax) {
-        List<RecipeHolder<FletchingRecipe>> recipes = cachedRecipes.get(player.getUUID());
-        SimpleContainer container = craftingContainers.get(player.getUUID());
-        if (recipes == null || container == null || recipeIndex < 0 || recipeIndex >= recipes.size()) return;
-
-        FletchingRecipe recipe = recipes.get(recipeIndex).value();
-
-        // Return current grid items to player
-        for (int i = 1; i <= 9; i++) {
-            ItemStack stack = container.getItem(i);
-            if (!stack.isEmpty()) {
-                if (!player.getInventory().add(stack.copy())) player.drop(stack.copy(), false, Prediction.SERVER_ONLY);
-                container.setItem(i, ItemStack.EMPTY);
-            }
-        }
-
-        // Find matching items and calculate max sets
-        Map<net.minecraft.world.item.Item, Integer> needed = new LinkedHashMap<>();
-        Map<Integer, net.minecraft.world.item.Item> slotToItem = new HashMap<>();
-
-        for (int i = 0; i < recipe.getIngredients().size(); i++) {
-            Ingredient ingredient = recipe.getIngredients().get(i);
-            if (ingredient.isEmpty()) continue;
-            int gridSlot = 1 + (i % recipe.getWidth()) + (i / recipe.getWidth()) * 3;
-
-            net.minecraft.world.item.Item found = null;
-            for (int j = 0; j < player.getInventory().getContainerSize(); j++) {
-                ItemStack invStack = player.getInventory().getItem(j);
-                if (!invStack.isEmpty() && ingredient.test(invStack)) { found = invStack.getItem(); break; }
-            }
-            if (found == null) return;
-
-            needed.merge(found, 1, Integer::sum);
-            slotToItem.put(gridSlot, found);
-        }
-
-        int maxSets = fillMax ? 64 : 1;
-        for (var entry : needed.entrySet()) {
-            int available = 0;
-            for (int j = 0; j < player.getInventory().getContainerSize(); j++) {
-                if (player.getInventory().getItem(j).is(entry.getKey())) available += player.getInventory().getItem(j).getCount();
-            }
-            if (entry.getValue() > 0) maxSets = Math.min(maxSets, available / entry.getValue());
-        }
-        if (maxSets <= 0) return;
-
-        // Take items from inventory and place into grid
-        for (var entry : slotToItem.entrySet()) {
-            int toPlace = maxSets;
-            for (int j = 0; j < player.getInventory().getContainerSize() && toPlace > 0; j++) {
-                ItemStack invStack = player.getInventory().getItem(j);
-                if (invStack.is(entry.getValue())) {
-                    int take = Math.min(toPlace, invStack.getCount());
-                    invStack.shrink(take);
-                    toPlace -= take;
-                }
-            }
-            container.setItem(entry.getKey(), new ItemStack(entry.getValue(), maxSets));
-        }
-
-        updateResult(player);
-        if (player.containerMenu != null) player.containerMenu.broadcastChanges();
-    }
 
     private static void handleResultTake(ServerPlayer player, boolean takeAll) {
         SimpleContainer container = craftingContainers.get(player.getUUID());
