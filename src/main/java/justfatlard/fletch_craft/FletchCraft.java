@@ -169,43 +169,91 @@ public class FletchCraft implements ModInitializer {
         SimpleContainer container = new SimpleContainer(10);
         craftingContainers.put(player.getUUID(), container);
 
+        // Laid out from the parts rather than from constants that were once measured by hand.
+        // The old numbers put a nine-wide inventory at x=8 and the recipe panel at x=110, so
+        // sixty pixels of somebody's pack sat underneath the recipe list - and the panel ran to
+        // a fixed height whether there were four rows of recipes or none.
+        int cols = 8;
+        int shown = Math.min(recipes.size(), cols * MAX_RECIPE_ROWS);
+        int recipeRows = Math.max(1, (shown + cols - 1) / cols);
+
+        int recipePanelW = MARGIN + cols * CELL + MARGIN;
+        int recipePanelH = RECIPE_TITLE_H + recipeRows * CELL + MARGIN;
+        int recipeX = MARGIN + CRAFT_W + MARGIN;
+
+        int width = recipeX + recipePanelW + MARGIN;
+        int topH = Math.max(CRAFT_H, recipePanelH);
+        int invY = TOP_Y + topH + 16;
+        int hotbarY = invY + 3 * CELL + 4;
+        int height = hotbarY + CELL + MARGIN;
+
+        // Centred under both columns: the pack is the widest thing here and the one people look
+        // at, so it sets its own place rather than being tucked under the left-hand column.
+        int invX = (width - 9 * CELL) / 2;
+
         ScreenBuilder builder = new ScreenBuilder(SCREEN_TYPE)
-            .size(280, 180)
+            .size(width, height)
             .title("Fletching Table")
             .container(10, true);
 
-        builder.panel("bg", 0, 0, 280, 180, Map.of("border", "beveled"));
-        builder.text("title", 8, 6, Map.of("text", "Fletching Table", "color", "#404040"));
+        builder.panel("bg", 0, 0, width, height, Map.of("border", "beveled"));
+        builder.text("title", MARGIN, 6, Map.of("text", "Fletching Table", "color", "#404040"));
 
         // Crafting grid (3x3): slots 1-9
-        builder.text("grid_label", 8, 18, Map.of("text", "Crafting", "color", "#404040"));
-        builder.inventoryGrid("craft_grid", 8, 28, 3, 3, 1);
+        builder.text("grid_label", MARGIN, TOP_Y + 4, Map.of("text", "Crafting", "color", "#404040"));
+        builder.inventoryGrid("craft_grid", MARGIN, TOP_Y + 14, 3, 3, 1);
 
         // Arrow + result
-        builder.sprite("arrow", 66, 44, 14, 2, Map.of("color", "#373737"));
-        builder.inventoryGrid("result_slot", 84, 38, 1, 1, 0);
-        builder.button("result_take", 84, 58, 16, 12, Map.of("label", "Take"));
+        builder.sprite("arrow", MARGIN + 3 * CELL + 4, TOP_Y + 40, 14, 2, Map.of("color", "#373737"));
+        builder.inventoryGrid("result_slot", MARGIN + 3 * CELL + 22, TOP_Y + 34, 1, 1, 0);
+        // Wide enough for the word. At sixteen it read "Tak...", which is a button that has
+        // spent its whole width telling you it has no width.
+        builder.button("result_take", MARGIN + 3 * CELL + 18, TOP_Y + 54, 26, 12,
+            Map.of("label", "Take"));
 
         // Recipe browser
-        builder.panel("recipe_panel", 110, 6, 164, 168,
+        builder.panel("recipe_panel", recipeX, TOP_Y - 6, recipePanelW, recipePanelH,
             Map.of("background", "#CC000000", "border", "flat", "border_color", "#555555"));
-        builder.text("recipe_title", 116, 10, Map.of("text", "Fletching Recipes", "color", "#FFFFFF"));
+        builder.text("recipe_title", recipeX + MARGIN, TOP_Y - 2,
+            Map.of("text", "Fletching Recipes", "color", "#FFFFFF"));
 
-        int cols = 8;
-        for (int i = 0; i < Math.min(recipes.size(), cols * 8); i++) {
+        for (int i = 0; i < shown; i++) {
             RecipeHolder<FletchingRecipe> recipe = recipes.get(i);
-            String label = recipe.value().getResult().getHoverName().getString();
             int col = i % cols, row = i / cols;
-            builder.button("recipe_" + i, 116 + col * 18, 24 + row * 18, 18, 18,
-                Map.of("label", label.length() > 2 ? label.substring(0, 2) : label));
+            int bx = recipeX + MARGIN + col * CELL;
+            int by = TOP_Y - 6 + RECIPE_TITLE_H + row * CELL;
+
+            // The button carries the click; the icon on top of it carries the meaning. The label
+            // used to be the first two letters of the result's name, which for a table whose
+            // recipes are mostly arrows and tipped arrows meant a grid reading "St St St St".
+            builder.button("recipe_" + i, bx, by, CELL, CELL, Map.of("label", ""));
+            builder.itemIcon("recipe_icon_" + i, bx + 1, by + 1,
+                BuiltInRegistries.ITEM.getKey(recipe.value().getResult().getItem()).toString(), 1);
         }
 
         // Player inventory
-        builder.inventoryGrid("player_inv", 8, 100, 3, 9, 10);
-        builder.inventoryGrid("hotbar", 8, 158, 1, 9, 37);
+        builder.inventoryGrid("player_inv", invX, invY, 3, 9, 10);
+        builder.inventoryGrid("hotbar", invX, hotbarY, 1, 9, 37);
 
         PandoricalApi.screens().openContainer(player, builder.build(), container, Set.of(0));
     }
+
+    /** One slot, and the gap the vanilla screens leave around their edges. */
+    private static final int CELL = 18;
+    private static final int MARGIN = 8;
+
+    /** Where the two columns start, below the screen's own title. */
+    private static final int TOP_Y = 20;
+
+    /** Three rows of slots plus the label above them. */
+    private static final int CRAFT_W = 3 * CELL + 22 + CELL;
+    private static final int CRAFT_H = 14 + 3 * CELL + 18;
+
+    /** Room for the "Fletching Recipes" heading above the grid of them. */
+    private static final int RECIPE_TITLE_H = 18;
+
+    /** Enough recipes for any table worth browsing; past this the panel would outgrow a screen. */
+    private static final int MAX_RECIPE_ROWS = 8;
 
     private static void handleRecipeClick(ServerPlayer player, int recipeIndex, boolean fillMax) {
         List<RecipeHolder<FletchingRecipe>> recipes = cachedRecipes.get(player.getUUID());
