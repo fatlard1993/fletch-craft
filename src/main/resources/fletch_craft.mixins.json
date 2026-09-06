@@ -1,0 +1,11 @@
+{
+  "required": true,
+  "package": "justfatlard.fletch_craft.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "mixins": [
+    "PlaceInVanillaMenuMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

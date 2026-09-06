@@ -25,6 +25,8 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.block.Blocks;
@@ -72,6 +74,8 @@ public class FletchCraft implements ModInitializer {
 
     // Per-player crafting state
     private static final Map<UUID, SimpleContainer> craftingContainers = new ConcurrentHashMap<>();
+    /** What each open table last showed in its result slot; see {@link #afterSlotClick}. */
+    private static final Map<UUID, ItemStack> shownResult = new ConcurrentHashMap<>();
 
     @Override
     public void onInitialize() {
@@ -105,21 +109,19 @@ public class FletchCraft implements ModInitializer {
     }
 
     private void registerScreenHandlers() {
-        // Slot changes → update result
+        // Every slot click reports the whole container, one call per slot; slot 0 is the one
+        // pass where the picture is complete and consistent, so the work happens there and the
+        // other nine are ignored.
         PandoricalApi.screens().onSlotChange(SCREEN_TYPE, (player, slotIndex, stack) -> {
-            if (slotIndex >= 1 && slotIndex <= 9) updateResult(player);
+            if (slotIndex == 0) afterSlotClick(player);
         });
 
-        // Result take
-        PandoricalApi.screens().onAction(SCREEN_TYPE, "result_take", (player, data) -> {
-            handleResultTake(player, false);
-        });
-        PandoricalApi.screens().onAction(SCREEN_TYPE, "result_take_all", (player, data) -> {
-            handleResultTake(player, true);
-        });
+        // A recipe book asking for a recipe to be laid out on this bench.
+        PandoricalApi.screens().onPlaceRecipe(SCREEN_TYPE, FletchCraft::placeRecipe);
 
         // Container removed: return items
         PandoricalApi.screens().onContainerRemoved(SCREEN_TYPE, player -> {
+            shownResult.remove(player.getUUID());
             SimpleContainer container = craftingContainers.remove(player.getUUID());
             if (container != null) {
                 for (int i = 1; i < container.getContainerSize(); i++) {
@@ -142,90 +144,180 @@ public class FletchCraft implements ModInitializer {
             return;
         }
 
-        // Slot 0 = result (read-only), slots 1-9 = crafting grid
-        SimpleContainer container = new SimpleContainer(10);
+        // Slot 0 = result, slots 1-9 = crafting grid. The result slot hands items out and
+        // never takes them, said the way vanilla's ResultSlot says it: refuse the placement,
+        // allow the pickup.
+        SimpleContainer container = new SimpleContainer(10) {
+            @Override
+            public boolean canPlaceItem(int slot, ItemStack stack) {
+                return slot != 0;
+            }
+        };
         craftingContainers.put(player.getUUID(), container);
 
-        // A bench, and nothing else on it.
+        // A bench, and nothing else on it - and the bench is vanilla's own.
         //
         // This used to carry its own recipe list down the right-hand side: a grid of buttons
         // that drew, and answered a click, and told you almost nothing - two letters of a
         // result's name, which for a table whose output is mostly arrows read "St St St St".
-        // Browsing recipes is a solved problem and not this mod's to solve twice, so the panel
-        // is gone and the screen is what a fletching table always should have been, a crafting
-        // bench that happens to sit in a fletching table.
-        int width = MARGIN + 9 * CELL + MARGIN;
-        int invY = TOP_Y + CRAFT_H + 12;
-        int hotbarY = invY + 3 * CELL + 4;
-        int height = hotbarY + CELL + MARGIN;
-        int invX = MARGIN;
-
+        // Browsing recipes is a solved problem and not this mod's to solve twice.
+        //
+        // What is left is drawn on the crafting table's own GUI texture at the crafting table's
+        // own coordinates, so the arrow, the big result frame, the panel bevel and every slot
+        // are vanilla's to the pixel rather than an impression of them. The grids below only
+        // place the menu's slots over the frames already in that picture, which is what
+        // SLOT_STYLE "none" is for.
         ScreenBuilder builder = new ScreenBuilder(SCREEN_TYPE)
-            .size(width, height)
+            .size(VANILLA_W, VANILLA_H)
             .title("Fletching Table")
             .container(10, true)
             // What this bench is, so a recipe book can offer its recipes. The screen draws no
             // browser of its own; saying what it crafts is the whole of its part in that.
             .recipeStation(Identifier.fromNamespaceAndPath(MOD_ID, "fletching").toString());
 
-        builder.panel("bg", 0, 0, width, height, Map.of("border", "beveled"));
-        builder.text("title", MARGIN, 6, Map.of("text", "Fletching Table", "color", "#404040"));
+        builder.sprite("bg", 0, 0, VANILLA_W, VANILLA_H, Map.of(
+            ComponentType.PROP_TEXTURE, "minecraft:textures/gui/container/crafting_table.png",
+            ComponentType.PROP_TEXTURE_WIDTH, "256",
+            ComponentType.PROP_TEXTURE_HEIGHT, "256",
+            ComponentType.PROP_TEXTURE_U, "0",
+            ComponentType.PROP_TEXTURE_V, "0"));
 
-        // Crafting grid (3x3): slots 1-9
-        builder.text("grid_label", MARGIN, TOP_Y + 4, Map.of("text", "Crafting", "color", "#404040"));
-        builder.inventoryGrid("craft_grid", MARGIN, TOP_Y + 14, 3, 3, 1);
+        // Where vanilla puts its own two labels
+        builder.text("title", 28, 6, Map.of("text", "Fletching Table", "color", LABEL_COLOR));
+        builder.text("inv_label", 8, 72, Map.of("text", "Inventory", "color", LABEL_COLOR));
 
-        // Arrow + result
-        builder.sprite("arrow", MARGIN + 3 * CELL + 4, TOP_Y + 40, 14, 2, Map.of("color", "#373737"));
-        builder.inventoryGrid("result_slot", MARGIN + 3 * CELL + 22, TOP_Y + 34, 1, 1, 0);
-        // Wide enough for the word. At sixteen it read "Tak...", which is a button that has
-        // spent its whole width telling you it has no width.
-        builder.button("result_take", MARGIN + 3 * CELL + 18, TOP_Y + 54, 26, 12,
-            Map.of("label", "Take"));
+        // Vanilla slot coordinates are the ITEM's corner; a grid's are the FRAME's, one pixel
+        // out from it, which is why every number here is vanilla's less one.
+        // These three draw their own frames, and it costs nothing: Pandorical's beveled slot is
+        // vanilla's slot, to the same three colours, landing exactly on the ones already in the
+        // picture. Drawing them is invisible where it works and a plain slot grid where the
+        // client is older than SLOT_STYLE "none", which beats a client that old rendering the
+        // whole grid as one flat grey block.
+        builder.inventoryGrid("craft_grid", 29, 16, 3, 3, 1);
+        builder.inventoryGrid("player_inv", 7, 83, 3, 9, 10);
+        builder.inventoryGrid("hotbar", 7, 141, 1, 9, 37);
 
-        // Player inventory
-        builder.inventoryGrid("player_inv", invX, invY, 3, 9, 10);
-        builder.inventoryGrid("hotbar", invX, hotbarY, 1, 9, 37);
+        // The result is the one that cannot: vanilla frames it at 26x26 and an 18x18 slot drawn
+        // inside that reads as a box in a box, so here the backdrop's frame is the only one.
+        builder.inventoryGrid("result_slot", 123, 34, 1, 1, 0, BARE_SLOTS);
 
-        PandoricalApi.screens().openContainer(player, builder.build(), container, Set.of(0));
+        // No read-only slots. The result is guarded the way vanilla guards its own - the
+        // container refuses to have anything placed in slot 0 - which leaves it free to be
+        // picked up. Marking it read-only here would refuse the pickup too, which is what the
+        // "Take" button underneath used to be for.
+        PandoricalApi.screens().openContainer(player, builder.build(), container, Set.of());
     }
 
-    /** One slot, and the gap the vanilla screens leave around their edges. */
-    private static final int CELL = 18;
-    private static final int MARGIN = 8;
+    /** Three by three, the box the recipes are read into and laid out in. */
+    private static final int GRID_SIDE = 3;
 
-    /** Where the two columns start, below the screen's own title. */
-    private static final int TOP_Y = 20;
+    /** The crafting table's own panel size, because that is the picture this screen is drawn on. */
+    private static final int VANILLA_W = 176;
+    private static final int VANILLA_H = 166;
 
-    /** Three rows of slots plus the label above them. */
-    private static final int CRAFT_W = 3 * CELL + 22 + CELL;
-    private static final int CRAFT_H = 14 + 3 * CELL + 18;
+    /** Vanilla's label grey. */
+    private static final String LABEL_COLOR = "#404040";
 
-    /** Room for the "Fletching Recipes" heading above the grid of them. */
-    private static final int RECIPE_TITLE_H = 18;
+    /** The backdrop already has every slot frame in it; the grids only place the menu's slots. */
+    private static final Map<String, String> BARE_SLOTS =
+        Map.of(ComponentType.PROP_SLOT_STYLE, "none");
 
 
-    private static void handleResultTake(ServerPlayer player, boolean takeAll) {
+    /**
+     * What one click on this screen means, worked out after the fact.
+     *
+     * <p>There is no event for "the player took the result", only that every slot is reported
+     * once a click has landed. But the result slot is written by nothing except
+     * {@link #updateResultFromContainer}, which runs at the end of every click - so between
+     * clicks it always holds the result of the grid as it stands. An empty result slot where
+     * there was one a moment ago can therefore only mean the player lifted it off, and that is
+     * when the ingredients are spent.
+     *
+     * <p>Remembering what was shown is what makes that test honest: placing the last ingredient
+     * of a recipe also leaves an empty result slot beside a grid that matches, and consuming
+     * there would eat the ingredients the instant they were laid down.
+     */
+    private static void afterSlotClick(ServerPlayer player) {
         SimpleContainer container = craftingContainers.get(player.getUUID());
         if (container == null) return;
-        ItemStack result = container.getItem(0);
-        if (result.isEmpty()) return;
 
-        if (takeAll) {
-            for (int i = 0; i < 64; i++) {
-                if (container.getItem(0).isEmpty()) break;
-                ItemStack crafted = container.getItem(0).copy();
-                if (!player.getInventory().add(crafted)) player.drop(crafted, false, Prediction.SERVER_ONLY);
-                consumeIngredients(container);
-                updateResultFromContainer(container, player);
-            }
-        } else {
-            if (!player.getInventory().add(result.copy())) player.drop(result.copy(), false, Prediction.SERVER_ONLY);
+        ItemStack was = shownResult.getOrDefault(player.getUUID(), ItemStack.EMPTY);
+        if (!was.isEmpty() && container.getItem(0).isEmpty()) {
             consumeIngredients(container);
-            updateResultFromContainer(container, player);
         }
 
+        updateResultFromContainer(container, player);
+        shownResult.put(player.getUUID(), container.getItem(0).copy());
         if (player.containerMenu != null) player.containerMenu.broadcastChanges();
+    }
+
+    /**
+     * Lay a recipe out in the grid from what the player is carrying.
+     *
+     * <p>The work a crafting table gets from vanilla for free. {@code ServerPlaceRecipe} only
+     * serves a {@code RecipeBookMenu}, so a station has to do its own: empty the grid back to the
+     * player, then take one of each ingredient out of their pack and put it where the recipe
+     * says. Anything already on the bench goes back first, so picking a second recipe replaces
+     * the first instead of refusing to fit beside it.
+     *
+     * <p>Ingredients are indexed {@code column + row * width} over the recipe's own box, the same
+     * reading {@link FletchingRecipe#matches} uses, and the box is laid into the top-left of the
+     * three by three - which is where the player would have put it.
+     */
+    private static void placeRecipe(ServerPlayer player, RecipeHolder<?> holder, boolean useMaxItems) {
+        SimpleContainer container = craftingContainers.get(player.getUUID());
+        if (container == null) return;
+        if (!(holder.value() instanceof FletchingRecipe recipe)) return;
+
+        returnGrid(player, container);
+
+        List<Ingredient> ingredients = recipe.getIngredients();
+        int width = Math.max(1, recipe.getWidth());
+
+        for (int i = 0; i < ingredients.size(); i++) {
+            int column = i % width;
+            int row = i / width;
+            if (column >= GRID_SIDE || row >= GRID_SIDE) continue;
+
+            ItemStack taken = takeOneMatching(player, ingredients.get(i));
+            if (taken.isEmpty()) continue;
+            container.setItem(1 + row * GRID_SIDE + column, taken);
+        }
+
+        // A grid that was filled by hand ends its click in afterSlotClick; this one has to say
+        // the same thing itself, or the result slot stays empty until something else is clicked
+        updateResultFromContainer(container, player);
+        shownResult.put(player.getUUID(), container.getItem(0).copy());
+        if (player.containerMenu != null) player.containerMenu.broadcastChanges();
+    }
+
+    /** Empty the crafting grid back into the player's pack. */
+    private static void returnGrid(ServerPlayer player, SimpleContainer container) {
+        for (int slot = 1; slot <= GRID_SIDE * GRID_SIDE; slot++) {
+            ItemStack stack = container.getItem(slot);
+            if (stack.isEmpty()) continue;
+            if (!player.getInventory().add(stack.copy())) {
+                player.drop(stack.copy(), false, Prediction.SERVER_ONLY);
+            }
+            container.setItem(slot, ItemStack.EMPTY);
+        }
+    }
+
+    /**
+     * Take a single item matching this ingredient out of the player's pack.
+     *
+     * <p>The hotbar included, and the worn gear not: {@code INVENTORY_SIZE} is where the part a
+     * player can rummage through ends, and taking a helmet off somebody's head to craft with is
+     * not what picking a recipe means.
+     */
+    private static ItemStack takeOneMatching(ServerPlayer player, Ingredient ingredient) {
+        var pack = player.getInventory();
+        for (int slot = 0; slot < net.minecraft.world.entity.player.Inventory.INVENTORY_SIZE; slot++) {
+            ItemStack stack = pack.getItem(slot);
+            if (stack.isEmpty() || !ingredient.test(stack)) continue;
+            return stack.split(1);
+        }
+        return ItemStack.EMPTY;
     }
 
     private static void updateResult(ServerPlayer player) {

@@ -8,7 +8,8 @@ A Fabric mod that makes the fletching table functional as a specialized crafting
 - **Visible to recipe books**: fletching recipes ship a shaped display, so a client can see what they are without this mod installed. They carry their own book category, which is what keeps them out of an ordinary workbench's book - they cannot be crafted there
 - **Data-Driven Recipes**: All fletching recipes are JSON files under `data/fletch_craft/recipe/`, customizable via datapacks without touching code
 - Included recipes:
-  - **Arrows** (16): flint + sticks + feathers
+  - **Arrows**: flint + stick + feather in a column makes 8, twice what a workbench would; three
+    columns at once make 24
   - **Spectral Arrows** (3): glowstone dust + arrows
   - **Bow**: sticks + string
   - **Crossbow**: sticks + iron nugget + string (simplified recipe)
@@ -28,17 +29,19 @@ Optional and guarded: without village-quests the mod behaves exactly as before.
 
 ## Pandorical
 
-Fletch Craft's entire fletching table interface (the crafting grid, result slot, and recipe browser) is a Pandorical container screen. The mod checks for the `screens` capability when a player opens a fletching table and, without it, tells the player fletching requires Pandorical instead of opening anything.
+Fletch Craft's entire fletching table interface is a Pandorical container screen, drawn on vanilla's own crafting table GUI texture at vanilla's own slot coordinates: the arrow, the result frame, the panel and every slot are the crafting table's, so the bench reads as one a player already knows how to use. The result slot is taken from directly, the way a crafting table's is.
+
+Picking a recipe in a recipe book lays it out in the bench's grid, the same as a book does at a crafting table. Vanilla's own route for that (`ServerboundPlaceRecipePacket`) is answered only for a `RecipeBookMenu`, which a Pandorical menu is not, so the station fills its own grid through Pandorical's `onPlaceRecipe` hook: whatever is on the bench goes back to the player first, then one of each ingredient comes out of their pack. The mod checks for the `screens` capability when a player opens a fletching table and, without it, tells the player fletching requires Pandorical instead of opening anything.
 
 **The Pandorical mod must be installed client-side to use the fletching table at all.** Vanilla clients (or clients without Pandorical) cannot interact with the fletching table through this mod.
-
-## Installation
-
-Install server-side alongside its declared dependencies (see `fabric.mod.json`); connecting clients need only Pandorical. Version targets live in `gradle.properties` (Minecraft, loader, Fabric API) and `fabric.mod.json` (Java).
 
 ## Customization
 
 All recipes are data-driven JSON files in `data/fletch_craft/recipe/`. Server admins can add, remove, or modify fletching recipes via datapacks without touching code.
+
+## Development
+
+Installing is in [DEVELOPMENT.md](DEVELOPMENT.md).
 
 ## License
 

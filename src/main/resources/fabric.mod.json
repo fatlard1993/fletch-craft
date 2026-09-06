@@ -1,6 +1,7 @@
 {
 	"schemaVersion": 1,
 	"id": "fletch_craft",
+	"mixins": ["fletch_craft.mixins.json"],
 	"version": "${version}",
 	"name": "Fletch Craft",
 	"description": "Makes the fletching table functional as a specialized crafting station for arrows, bows, crossbows, and wood processing. Data-driven recipes \u2014 customizable via datapacks.",
