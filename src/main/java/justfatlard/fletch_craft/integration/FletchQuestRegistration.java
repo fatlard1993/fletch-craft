@@ -62,7 +62,7 @@ public final class FletchQuestRegistration {
 				LessonApi.lines(
 					"*sees you glance at the table* You know what that is. Most people think it's furniture.",
 					"You're carrying flint and you've no gravel on you. That says you know where flint comes from.",
-					"{mentor} taught you. Course they did -- they start everyone on the gravel.")),
+					"{mentor} taught you. Course they did. They start everyone on the gravel.")),
 			new LessonApi.Hooks() {
 				@Override
 				public void onGraduate(ServerPlayer player, ServerLevel world, LessonApi.Teacher teacher) {
@@ -77,29 +77,29 @@ public final class FletchQuestRegistration {
 	private static List<LessonApi.Lesson> lessons() {
 		return List.of(
 			new LessonApi.Lesson(
-				"I need flint and I am too old to smash gravel and pray. -- The table in my house. You have walked past it a hundred "
+				"I need flint and I am too old to smash gravel and pray. The table in my house. You have walked past it a hundred "
 					+ "times. Right-click it. Four gravel in, three flint out, every time. Bring me twelve and I will say no more about it.",
-				"bring {name} twelve flint -- four gravel makes three, on his table",
+				"bring {name} twelve flint: four gravel makes three, on their table",
 				"Four gravel, three flint. Every time. There is no other recipe for flint.",
-				"*counts them* Good. Now understand what you just did, because it is the only reliable flint there is -- the game has no "
+				"*counts them* Good. Now understand what you just did, because it is the only reliable flint there is. The game has no "
 					+ "recipe for it at all. You break gravel and you hope, and one in ten gives you anything.",
 				"And the table is not furniture. It is a bench with its own board and its own list of things it will make, and it has "
 					+ "been sitting in every fletcher's house since before I was born with nobody laying a hand on it.",
 				Items.FLINT, atLeast(Items.FLINT, 12), 6),
 
 			new LessonApi.Lesson(
-				"Next: bring me a stripped log. Any wood. And I want you to do it without an axe -- do not go buying one, do not go "
+				"Next: bring me a stripped log. Any wood. And I want you to do it without an axe. Do not go buying one, do not go "
 					+ "wearing one out. Put the log on the table.",
-				"bring {name} a stripped log -- no axe",
+				"bring {name} a stripped log, no axe",
 				"The table strips wood. No axe, no edge worn down, no bark left over.",
-				"*runs a thumb along it* There. The table does that. Put any log on it, bamboo too, and it comes back stripped -- no axe, "
+				"*runs a thumb along it* There. The table does that. Put any log on it, bamboo too, and it comes back stripped. No axe, "
 					+ "nothing worn down, no waiting on a tool you would rather keep sharp.",
 				"And while you have wood on the board: it makes sticks better than a bench does. A plank gives three sticks there against "
 					+ "two at a crafting table. Half again, on the one thing you burn most of.",
 				Items.STRIPPED_OAK_LOG, FletchQuestRegistration::isStripped, 6),
 
 			new LessonApi.Lesson(
-				"String now. Nine of it. And I do not want you out in the dark at it -- there is a shorter way and you are standing next "
+				"String now. Nine of it. And I do not want you out in the dark at it. There is a shorter way and you are standing next "
 					+ "to it every day.",
 				"bring {name} nine string",
 				"Wool is string. One block of it, on the table.",
@@ -112,22 +112,22 @@ public final class FletchQuestRegistration {
 			new LessonApi.Lesson(
 				"Arrows. Thirty-two of them, and I want them made on the table, not at a bench. You will see the difference in the count "
 					+ "before I have to explain it.",
-				"bring {name} thirty-two arrows -- made on the table",
-				"Three flint, three sticks, three feathers. Sixteen arrows, not twelve.",
-				"*fans them out* Three of each and you get sixteen. At a bench those same three feathers get you twelve. A third more "
+				"bring {name} thirty-two arrows, made on the table",
+				"Three flint, three sticks, three feathers. Twenty-four arrows, not twelve.",
+				"*fans them out* Three of each and you get twenty-four. At a bench those same three feathers get you twelve. Twice the "
 					+ "arrow out of the same bird.",
 				"And feathers are the whole of it. Flint you now have as much of as you have gravel, sticks are wood, but every arrow in "
 					+ "the world is waiting on a chicken. Anything that stretches a feather further is the only saving that matters.",
 				Items.ARROW, atLeast(Items.ARROW, 32), 8),
 
 			new LessonApi.Lesson(
-				"Last one. A crossbow. Made on the table -- and before you go hunting a tripwire hook for it, do not. That is the point "
+				"Last one. A crossbow. Made on the table. And before you go hunting a tripwire hook for it, do not. That is the point "
 					+ "of the lesson and you will see it the moment you lay the pieces out.",
-				"bring {name} a crossbow -- made on the table",
+				"bring {name} a crossbow, made on the table",
 				"No tripwire hook. And a nugget of iron, not an ingot.",
-				"*works the lever once* There it is. Three sticks, two string, and one nugget of iron. No tripwire hook at all -- and a "
+				"*works the lever once* There it is. Three sticks, two string, and one nugget of iron. No tripwire hook at all. And a "
 					+ "hook is another ingot and a stick and a plank on its own, so you have saved that twice over.",
-				"A bench wants a whole ingot and the hook besides. The table wants a ninth of one. -- And use the list down the side of "
+				"A bench wants a whole ingot and the hook besides. The table wants a ninth of one. And use the list down the side of "
 					+ "the board while you are there: click a recipe and it lays the pieces out of your pack for you, hold shift and it "
 					+ "lays out as many sets as you can afford. I watched a man fill that grid by hand for a year.",
 				Items.CROSSBOW, stack -> stack.is(Items.CROSSBOW), 12));

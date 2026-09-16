@@ -33,7 +33,7 @@ Fletch Craft's entire fletching table interface is a Pandorical container screen
 
 Picking a recipe in a recipe book lays it out in the bench's grid, the same as a book does at a crafting table. Vanilla's own route for that (`ServerboundPlaceRecipePacket`) is answered only for a `RecipeBookMenu`, which a Pandorical menu is not, so the station fills its own grid through Pandorical's `onPlaceRecipe` hook: whatever is on the bench goes back to the player first, then one of each ingredient comes out of their pack. The mod checks for the `screens` capability when a player opens a fletching table and, without it, tells the player fletching requires Pandorical instead of opening anything.
 
-**The Pandorical mod must be installed client-side to use the fletching table at all.** Vanilla clients (or clients without Pandorical) cannot interact with the fletching table through this mod.
+**The Pandorical mod must be installed on the server, and client-side to use the fletching table at all.** Vanilla clients (or clients without Pandorical) cannot interact with the fletching table through this mod.
 
 ## Customization
 
