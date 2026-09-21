@@ -1,0 +1,16 @@
+{
+	"overview": [
+		"Makes the fletching table a working bench of its own: arrows, bows, crossbows and wood processing, at better rates than a crafting table gives.",
+		"Every recipe is a JSON file, so a datapack can change any of them."
+	],
+	"versions": {
+		"2.0.0": [
+			"The table opens as a plain bench, a 3x3 grid and a result slot and nothing else, and its recipes carry a display so a client without the mod can still see what they are.",
+			"Arrow recipes bring the advancements that unlock them, and the fletcher's lessons count them right: three columns of flint, stick and feather make twenty-four."
+		],
+		"1.0.0": [
+			"The fletching table becomes functional: arrows, spectral arrows, bows, crossbows, target blocks, stripping wood, sticks, wool into string and gravel into flint.",
+			"Server side, so a vanilla client can join and use it."
+		]
+	}
+}

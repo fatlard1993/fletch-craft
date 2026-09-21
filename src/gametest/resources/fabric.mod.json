@@ -1,0 +1,18 @@
+{
+	"schemaVersion": 1,
+	"id": "fletch-craft-gametest",
+	"version": "1.0.0",
+	"name": "Fletch Craft smoke test",
+	"description": "Loads the mod, joins a world, and fails if anything on the way threw.",
+	"license": "MIT",
+	"environment": "*",
+	"entrypoints": {
+		"fabric-client-gametest": [
+			"justfatlard.fletch_craft.gametest.SmokeTest"
+		]
+	},
+	"depends": {
+		"fletch_craft": "*",
+		"fabric-client-gametest-api-v1": "*"
+	}
+}
