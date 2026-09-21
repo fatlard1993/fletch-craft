@@ -1,14 +1,20 @@
 {
 	"schemaVersion": 1,
 	"id": "fletch_craft",
-	"mixins": ["fletch_craft.mixins.json"],
+	"mixins": [
+		"fletch_craft.mixins.json"
+	],
 	"version": "${version}",
 	"name": "Fletch Craft",
-	"description": "Makes the fletching table functional as a specialized crafting station for arrows, bows, crossbows, and wood processing. Data-driven recipes \u2014 customizable via datapacks.",
+	"description": "Makes the fletching table functional as a specialized crafting station for arrows, bows, crossbows, and wood processing. Data-driven recipes — customizable via datapacks.",
 	"authors": [
 		"justfatlard"
 	],
-	"contact": {},
+	"contact": {
+		"homepage": "https://github.com/fatlard1993/fletch-craft",
+		"sources": "https://github.com/fatlard1993/fletch-craft",
+		"issues": "https://github.com/fatlard1993/fletch-craft/issues"
+	},
 	"license": "MIT",
 	"icon": "assets/fletch_craft/icon.png",
 	"environment": "*",
