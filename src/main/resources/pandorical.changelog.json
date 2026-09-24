@@ -5,11 +5,14 @@
 	],
 	"versions": {
 		"2.0.0": [
-			"The table opens as a plain bench, a 3x3 grid and a result slot and nothing else, and its recipes carry a display so a client without the mod can still see what they are.",
-			"Arrow recipes bring the advancements that unlock them, and the fletcher's lessons count them right: three columns of flint, stick and feather make twenty-four."
+			"The table opens as a plain bench: a 3x3 grid, a result slot, nothing else.",
+			"Its recipes carry a display, so a client without the mod can still see what they are.",
+			"Arrow recipes bring the advancements that unlock them.",
+			"The fletcher's lessons count right: three columns of flint, stick and feather make twenty-four."
 		],
 		"1.0.0": [
-			"The fletching table becomes functional: arrows, spectral arrows, bows, crossbows, target blocks, stripping wood, sticks, wool into string and gravel into flint.",
+			"The fletching table becomes functional: arrows, spectral arrows, bows, crossbows, targets.",
+			"Stripping wood, sticks, wool into string, gravel into flint.",
 			"Server side, so a vanilla client can join and use it."
 		]
 	}
