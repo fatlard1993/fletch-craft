@@ -8,8 +8,7 @@ A Fabric mod that makes the fletching table functional as a specialized crafting
 - **Visible to recipe books**: fletching recipes ship a shaped display, so a client can see what they are without this mod installed. They carry their own book category, which is what keeps them out of an ordinary workbench's book - they cannot be crafted there
 - **Data-Driven Recipes**: All fletching recipes are JSON files under `data/fletch_craft/recipe/`, customizable via datapacks without touching code
 - Included recipes:
-  - **Arrows**: flint + stick + feather in a column makes 8, twice what a workbench would; three
-    columns at once make 24
+  - **Arrows**: flint + stick + feather in a column makes 8, twice what a workbench would; three columns at once make 24
   - **Spectral Arrows** (3): glowstone dust + arrows
   - **Bow**: sticks + string
   - **Crossbow**: sticks + iron nugget + string (simplified recipe)
