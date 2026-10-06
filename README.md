@@ -2,6 +2,8 @@
 
 A Fabric mod that makes the fletching table functional as a specialized crafting station for arrows, bows, crossbows, and wood processing, with its own dedicated crafting bench.
 
+![The fletching table as a bench: three columns of flint, stick and feather make twenty-four arrows](screenshots/arrow-bench.png)
+
 ## Features
 
 - **Functional Fletching Table**: Right-click a fletching table to open a plain crafting bench - a 3x3 grid and a result slot, and nothing else on it
