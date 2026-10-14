@@ -1,0 +1,6 @@
+{
+  "parent": "item/handheld",
+  "textures": {
+    "layer0": "fletch_craft:item/obsidian_throwing_knife"
+  }
+}

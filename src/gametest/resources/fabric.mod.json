@@ -9,7 +9,8 @@
 	"entrypoints": {
 		"fabric-client-gametest": [
 			"justfatlard.fletch_craft.gametest.SmokeTest",
-			"justfatlard.fletch_craft.gametest.Showcase"
+			"justfatlard.fletch_craft.gametest.Showcase",
+			"justfatlard.fletch_craft.gametest.KnappedTools"
 		]
 	},
 	"depends": {

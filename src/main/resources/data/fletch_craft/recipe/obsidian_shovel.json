@@ -1,0 +1,15 @@
+{
+  "type": "fletch_craft:fletching",
+  "group": "shovels",
+  "width": 1,
+  "height": 3,
+  "ingredients": [
+    "minecraft:obsidian",
+    "minecraft:stick",
+    "minecraft:stick"
+  ],
+  "result": {
+    "id": "fletch_craft:obsidian_shovel",
+    "count": 1
+  }
+}

@@ -1,3 +1,14 @@
 {
-	"container.fletch_craft.fletching": "Fletching Table"
+	"container.fletch_craft.fletching": "Fletching Table",
+	"item.fletch_craft.flint_axe": "Flint Axe",
+	"item.fletch_craft.flint_shovel": "Flint Shovel",
+	"item.fletch_craft.flint_hoe": "Flint Hoe",
+	"item.fletch_craft.flint_throwing_knife": "Flint Throwing Knife",
+	"item.fletch_craft.obsidian_axe": "Obsidian Axe",
+	"item.fletch_craft.obsidian_shovel": "Obsidian Shovel",
+	"item.fletch_craft.obsidian_hoe": "Obsidian Hoe",
+	"item.fletch_craft.obsidian_throwing_knife": "Obsidian Throwing Knife",
+	"entity.fletch_craft.throwing_knife": "Throwing Knife",
+	"tag.item.fletch_craft.flint_tool_materials": "Flint Tool Materials",
+	"tag.item.fletch_craft.obsidian_tool_materials": "Obsidian Tool Materials"
 }

@@ -1,0 +1,14 @@
+{
+  "type": "fletch_craft:fletching",
+  "group": "throwing_knives",
+  "width": 1,
+  "height": 2,
+  "ingredients": [
+    "minecraft:flint",
+    "minecraft:stick"
+  ],
+  "result": {
+    "id": "fletch_craft:flint_throwing_knife",
+    "count": 2
+  }
+}

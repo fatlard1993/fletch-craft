@@ -6,7 +6,7 @@
 	],
 	"version": "${version}",
 	"name": "Fletch Craft",
-	"description": "Makes the fletching table functional as a specialized crafting station for arrows, bows, crossbows, and wood processing. Data-driven recipes — customizable via datapacks.",
+	"description": "Makes the fletching table functional as a specialized crafting station for arrows, bows, crossbows, flint and obsidian tools and throwing knives, and wood processing. Data-driven recipes — customizable via datapacks.",
 	"authors": [
 		"justfatlard"
 	],

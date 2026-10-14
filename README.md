@@ -1,6 +1,6 @@
 # Fletch Craft
 
-A Fabric mod that makes the fletching table functional as a specialized crafting station for arrows, bows, crossbows, and wood processing, with its own dedicated crafting bench.
+A Fabric mod that makes the fletching table functional as a specialized crafting station for arrows, bows, crossbows, knapped flint and obsidian tools, and wood processing, with its own dedicated crafting bench.
 
 ![The fletching table as a bench: three columns of flint, stick and feather make twenty-four arrows](screenshots/arrow-bench.png)
 
@@ -19,6 +19,10 @@ A Fabric mod that makes the fletching table functional as a specialized crafting
   - **Flint** (3): gravel
   - **String** (9): any wool color
   - **Target Block**: redstone + hay bale
+  - **Flint and Obsidian Tools**: an axe, shovel and hoe in each, laid out like their vanilla shapes with flint or obsidian for the head. Flint digs like stone and obsidian like iron, both a little faster and a little less durable than the tier they borrow from. Obsidian enchants as well as gold. Repaired with their own stone
+  - **Throwing Knives** (2): flint or obsidian over a stick. Right-click to throw; a knife drops where it lands, but one in five shatters on a hit. Obsidian hits harder
+  - The tools and knives have no crafting table recipe at all: the fletching table is the only place they come from
+- **Mirrored shapes**: every recipe also works flipped left to right, as at a crafting table
 
 ## Learning It
 
@@ -34,11 +38,15 @@ Fletch Craft's entire fletching table interface is a Pandorical container screen
 
 Picking a recipe in a recipe book lays it out in the bench's grid, the same as a book does at a crafting table. Vanilla's own route for that (`ServerboundPlaceRecipePacket`) is answered only for a `RecipeBookMenu`, which a Pandorical menu is not, so the station fills its own grid through Pandorical's `onPlaceRecipe` hook: whatever is on the bench goes back to the player first, then one of each ingredient comes out of their pack. The mod checks for the `screens` capability when a player opens a fletching table and, without it, tells the player fletching requires Pandorical instead of opening anything.
 
+The flint and obsidian items lean on Pandorical too: their textures are synced through Pandorical's content sync, and a knife in flight is drawn with its `thrown_item` renderer.
+
 **The Pandorical mod must be installed on the server, and client-side to use the fletching table at all.** Vanilla clients (or clients without Pandorical) cannot interact with the fletching table through this mod.
 
 ## Customization
 
 All recipes are data-driven JSON files in `data/fletch_craft/recipe/`. Server admins can add, remove, or modify fletching recipes via datapacks without touching code.
+
+A fletching recipe is a `width`, a `height`, and its `ingredients` read row by row; `""` leaves a cell empty, as the axe and hoe do.
 
 ## Development
 

@@ -13,15 +13,16 @@ import net.minecraft.world.level.Level;
 import java.util.Collections;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class FletchingRecipe implements Recipe<CraftingInput> {
-    private final List<Ingredient> ingredients;
+    private final List<Optional<Ingredient>> ingredients;
     private final ItemStackTemplate resultTemplate;
     private final String group;
     private final int width;
     private final int height;
 
-    public FletchingRecipe(String group, int width, int height, List<Ingredient> ingredients, ItemStackTemplate resultTemplate) {
+    public FletchingRecipe(String group, int width, int height, List<Optional<Ingredient>> ingredients, ItemStackTemplate resultTemplate) {
         this.group = group;
         this.width = width;
         this.height = height;
@@ -34,21 +35,22 @@ public class FletchingRecipe implements Recipe<CraftingInput> {
         if (input.width() < this.width || input.height() < this.height) return false;
         for (int ox = 0; ox <= input.width() - this.width; ox++) {
             for (int oy = 0; oy <= input.height() - this.height; oy++) {
-                if (matchesExact(input, ox, oy)) return true;
+                if (matchesExact(input, ox, oy, false) || matchesExact(input, ox, oy, true)) return true;
             }
         }
         return false;
     }
 
-    private boolean matchesExact(CraftingInput input, int ox, int oy) {
+    private boolean matchesExact(CraftingInput input, int ox, int oy, boolean mirrored) {
         for (int x = 0; x < input.width(); x++) {
             for (int y = 0; y < input.height(); y++) {
-                int rx = x - ox, ry = y - oy;
+                int rx = mirrored ? width - 1 - (x - ox) : x - ox, ry = y - oy;
                 ItemStack stack = input.getItem(x + y * input.width());
                 if (rx >= 0 && ry >= 0 && rx < width && ry < height) {
                     int idx = rx + ry * width;
-                    if (idx < ingredients.size()) {
-                        if (!ingredients.get(idx).test(stack)) return false;
+                    Optional<Ingredient> slot = idx < ingredients.size() ? ingredients.get(idx) : Optional.empty();
+                    if (slot.isPresent()) {
+                        if (!slot.get().test(stack)) return false;
                     } else if (!stack.isEmpty()) return false;
                 } else if (!stack.isEmpty()) return false;
             }
@@ -76,8 +78,8 @@ public class FletchingRecipe implements Recipe<CraftingInput> {
 
     @Override
     public PlacementInfo placementInfo() {
-        if (ingredients.isEmpty()) return PlacementInfo.NOT_PLACEABLE;
-        return PlacementInfo.create(ingredients);
+        if (ingredients.stream().allMatch(Optional::isEmpty)) return PlacementInfo.NOT_PLACEABLE;
+        return PlacementInfo.createFromOptionals(ingredients);
     }
 
     @Override
@@ -102,8 +104,8 @@ public class FletchingRecipe implements Recipe<CraftingInput> {
      */
     public List<RecipeDisplay> display() {
         List<SlotDisplay> slots = new ArrayList<>(ingredients.size());
-        for (Ingredient ingredient : ingredients) {
-            slots.add(ingredient.display());
+        for (Optional<Ingredient> slot : ingredients) {
+            slots.add(slot.map(Ingredient::display).orElse(SlotDisplay.Empty.INSTANCE));
         }
 
         return List.of(new ShapedCraftingRecipeDisplay(
@@ -115,7 +117,7 @@ public class FletchingRecipe implements Recipe<CraftingInput> {
     @Override
     public String group() { return group; }
 
-    public List<Ingredient> getIngredients() { return ingredients; }
+    public List<Optional<Ingredient>> getIngredients() { return ingredients; }
     public ItemStack getResult() { return resultTemplate.create(); }
     public ItemStackTemplate getResultTemplate() { return resultTemplate; }
     public int getWidth() { return width; }

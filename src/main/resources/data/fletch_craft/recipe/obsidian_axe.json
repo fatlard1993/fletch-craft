@@ -1,0 +1,18 @@
+{
+  "type": "fletch_craft:fletching",
+  "group": "axes",
+  "width": 2,
+  "height": 3,
+  "ingredients": [
+    "minecraft:obsidian",
+    "minecraft:obsidian",
+    "minecraft:obsidian",
+    "minecraft:stick",
+    "",
+    "minecraft:stick"
+  ],
+  "result": {
+    "id": "fletch_craft:obsidian_axe",
+    "count": 1
+  }
+}

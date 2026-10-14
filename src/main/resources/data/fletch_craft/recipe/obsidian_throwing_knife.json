@@ -1,0 +1,14 @@
+{
+  "type": "fletch_craft:fletching",
+  "group": "throwing_knives",
+  "width": 1,
+  "height": 2,
+  "ingredients": [
+    "minecraft:obsidian",
+    "minecraft:stick"
+  ],
+  "result": {
+    "id": "fletch_craft:obsidian_throwing_knife",
+    "count": 2
+  }
+}

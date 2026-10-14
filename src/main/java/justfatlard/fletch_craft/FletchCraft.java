@@ -1,9 +1,12 @@
 package justfatlard.fletch_craft;
 
 import net.minecraft.util.Prediction;
+import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import justfatlard.fletch_craft.item.KnappedTools;
 import justfatlard.fletch_craft.recipe.FletchingRecipe;
 import justfatlard.pandorical.api.ComponentBuilder;
 import justfatlard.pandorical.api.ComponentType;
@@ -53,11 +56,17 @@ public class FletchCraft implements ModInitializer {
     // Recipe book category
     public static final RecipeBookCategory FLETCHING_CATEGORY = new RecipeBookCategory();
 
+    /** One cell of a recipe's box: an ingredient, or {@code ""} for a cell left empty. */
+    private static final Codec<Optional<Ingredient>> SLOT_CODEC = Codec.either(
+        Codec.STRING.validate(s -> s.isEmpty() ? DataResult.success(s) : DataResult.error(() -> "Not an empty slot: " + s)),
+        Ingredient.CODEC
+    ).xmap(cell -> cell.right(), slot -> slot.<Either<String, Ingredient>>map(Either::right).orElseGet(() -> Either.left("")));
+
     private static final MapCodec<FletchingRecipe> RECIPE_CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
         Codec.STRING.optionalFieldOf("group", "").forGetter(FletchingRecipe::group),
         Codec.INT.fieldOf("width").forGetter(FletchingRecipe::getWidth),
         Codec.INT.fieldOf("height").forGetter(FletchingRecipe::getHeight),
-        Ingredient.CODEC.listOf().fieldOf("ingredients").forGetter(FletchingRecipe::getIngredients),
+        SLOT_CODEC.listOf().fieldOf("ingredients").forGetter(FletchingRecipe::getIngredients),
         ItemStackTemplate.CODEC.fieldOf("result").forGetter(FletchingRecipe::getResultTemplate)
     ).apply(i, FletchingRecipe::new));
 
@@ -65,7 +74,7 @@ public class FletchCraft implements ModInitializer {
         ByteBufCodecs.STRING_UTF8, FletchingRecipe::group,
         ByteBufCodecs.VAR_INT, FletchingRecipe::getWidth,
         ByteBufCodecs.VAR_INT, FletchingRecipe::getHeight,
-        Ingredient.CONTENTS_STREAM_CODEC.apply(ByteBufCodecs.list()), FletchingRecipe::getIngredients,
+        Ingredient.OPTIONAL_CONTENTS_STREAM_CODEC.apply(ByteBufCodecs.list()), FletchingRecipe::getIngredients,
         ItemStackTemplate.STREAM_CODEC, FletchingRecipe::getResultTemplate,
         FletchingRecipe::new
     );
@@ -89,6 +98,7 @@ public class FletchCraft implements ModInitializer {
         Registry.register(BuiltInRegistries.RECIPE_BOOK_CATEGORY,
             Identifier.fromNamespaceAndPath(MOD_ID, "fletching"), FLETCHING_CATEGORY);
 
+        KnappedTools.register();
         registerBlockInteraction();
         registerScreenHandlers();
 
@@ -271,7 +281,7 @@ public class FletchCraft implements ModInitializer {
 
         returnGrid(player, container);
 
-        List<Ingredient> ingredients = recipe.getIngredients();
+        List<Optional<Ingredient>> ingredients = recipe.getIngredients();
         int width = Math.max(1, recipe.getWidth());
 
         for (int i = 0; i < ingredients.size(); i++) {
@@ -279,7 +289,8 @@ public class FletchCraft implements ModInitializer {
             int row = i / width;
             if (column >= GRID_SIDE || row >= GRID_SIDE) continue;
 
-            ItemStack taken = takeOneMatching(player, ingredients.get(i));
+            if (ingredients.get(i).isEmpty()) continue;
+            ItemStack taken = takeOneMatching(player, ingredients.get(i).get());
             if (taken.isEmpty()) continue;
             container.setItem(1 + row * GRID_SIDE + column, taken);
         }
