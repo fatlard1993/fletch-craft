@@ -30,8 +30,6 @@ The fletching table has sat in fletchers' houses for years doing nothing, so nob
 
 With [village-quests](https://github.com/fatlard1993/village-quests) installed, a fletcher will tell you the trick and ask for twelve flint to prove it took. Four gravel in, three flint out, every time.
 
-Optional and guarded: without village-quests the mod behaves exactly as before.
-
 ## Pandorical
 
 Fletch Craft's entire fletching table interface is a Pandorical container screen, drawn on vanilla's own crafting table GUI texture at vanilla's own slot coordinates: the arrow, the result frame, the panel and every slot are the crafting table's, so the bench reads as one a player already knows how to use. The result slot is taken from directly, the way a crafting table's is.
