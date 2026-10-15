@@ -28,6 +28,12 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Item;
+import net.minecraft.core.Holder;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.entity.player.StackedItemContents;
+import it.unimi.dsi.fastutil.ints.IntList;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.ItemStackTemplate;
@@ -270,6 +276,9 @@ public class FletchCraft implements ModInitializer {
      * says. Anything already on the bench goes back first, so picking a second recipe replaces
      * the first instead of refusing to fit beside it.
      *
+     * <p>Held shift ({@code useMaxItems}) lays out as many sets as the player can afford instead;
+     * see {@link #placeAsManyAsAffordable}.
+     *
      * <p>Ingredients are indexed {@code column + row * width} over the recipe's own box, the same
      * reading {@link FletchingRecipe#matches} uses, and the box is laid into the top-left of the
      * three by three - which is where the player would have put it.
@@ -279,6 +288,19 @@ public class FletchCraft implements ModInitializer {
         if (container == null) return;
         if (!(holder.value() instanceof FletchingRecipe recipe)) return;
 
+        if (!useMaxItems || !placeAsManyAsAffordable(player, container, recipe)) {
+            placeOneSet(player, container, recipe);
+        }
+
+        // A grid that was filled by hand ends its click in afterSlotClick; this one has to say
+        // the same thing itself, or the result slot stays empty until something else is clicked
+        updateResultFromContainer(container, player);
+        shownResult.put(player.getUUID(), container.getItem(0).copy());
+        if (player.containerMenu != null) player.containerMenu.broadcastChanges();
+    }
+
+    /** One of each ingredient, or as many of them as the pack has: a short set is still laid out. */
+    private static void placeOneSet(ServerPlayer player, SimpleContainer container, FletchingRecipe recipe) {
         returnGrid(player, container);
 
         List<Optional<Ingredient>> ingredients = recipe.getIngredients();
@@ -294,12 +316,95 @@ public class FletchCraft implements ModInitializer {
             if (taken.isEmpty()) continue;
             container.setItem(1 + row * GRID_SIDE + column, taken);
         }
+    }
 
-        // A grid that was filled by hand ends its click in afterSlotClick; this one has to say
-        // the same thing itself, or the result slot stays empty until something else is clicked
-        updateResultFromContainer(container, player);
-        shownResult.put(player.getUUID(), container.getItem(0).copy());
-        if (player.containerMenu != null) player.containerMenu.broadcastChanges();
+    /**
+     * Shift on the recipe book: as many sets as the pack and the grid between them can make,
+     * worked out the way vanilla's {@code ServerPlaceRecipe} works it out for a crafting table.
+     *
+     * <ul>
+     * <li>What is already on the bench counts as the player's: it goes back to the pack before the
+     *     sets are laid out, so it is counted alongside the pack, not on top of it.</li>
+     * <li>The count is the biggest number of whole sets that can be made, then capped by the
+     *     smallest max stack size among the items chosen, so no grid cell overflows.</li>
+     * <li>A grid that already holds this recipe at that count is left alone.</li>
+     * <li>Not even one whole set affordable: returns false, and the caller lays out what there is,
+     *     as a click without shift does. Vanilla clears the grid and shows a ghost recipe there; a
+     *     part-filled grid is this bench's ghost.</li>
+     * </ul>
+     *
+     * <p>Like vanilla, only plain stacks are counted and taken: nothing renamed, enchanted or
+     * otherwise changed is pulled into the grid by shift. The armour slots and offhand are never
+     * touched.
+     */
+    private static boolean placeAsManyAsAffordable(ServerPlayer player, SimpleContainer container, FletchingRecipe recipe) {
+        Inventory pack = player.getInventory();
+        StackedItemContents available = new StackedItemContents();
+        pack.fillStackedContents(available);
+        for (int slot = 1; slot <= GRID_SIDE * GRID_SIDE; slot++) {
+            available.accountSimpleStack(container.getItem(slot));
+        }
+
+        if (!available.canCraft(recipe, null)) return false;
+        int biggest = available.getBiggestCraftableStack(recipe, null);
+
+        // The grid already holds this recipe, and as many sets of it as could be laid out
+        if (recipe.matches(gridInput(container), player.level())) {
+            for (int slot = 1; slot <= GRID_SIDE * GRID_SIDE; slot++) {
+                ItemStack stack = container.getItem(slot);
+                if (!stack.isEmpty() && Math.min(biggest, stack.getMaxStackSize()) < stack.getCount() + 1) return true;
+            }
+        }
+
+        List<Holder<Item>> chosen = new ArrayList<>();
+        if (!available.canCraft(recipe, biggest, chosen::add)) return false;
+        int sets = biggest;
+        for (Holder<Item> item : chosen) {
+            sets = Math.min(sets, item.components().getOrDefault(DataComponents.MAX_STACK_SIZE, 1));
+        }
+        if (sets != biggest) {
+            chosen.clear();
+            if (!available.canCraft(recipe, sets, chosen::add)) return false;
+        }
+
+        returnGrid(player, container);
+
+        // One chosen item per ingredient that is not an empty cell, in the recipe's own order
+        IntList slotToChoice = recipe.placementInfo().slotsToIngredientIndex();
+        int width = Math.max(1, recipe.getWidth());
+        for (int i = 0; i < slotToChoice.size(); i++) {
+            int choice = slotToChoice.getInt(i);
+            if (choice < 0 || choice >= chosen.size()) continue;
+            int column = i % width;
+            int row = i / width;
+            if (column >= GRID_SIDE || row >= GRID_SIDE) continue;
+            int gridSlot = 1 + row * GRID_SIDE + column;
+            ItemStack laid = container.getItem(gridSlot);
+
+            int wanted = sets;
+            while (wanted > 0) {
+                int from = pack.findSlotMatchingCraftingIngredient(chosen.get(choice), laid);
+                if (from < 0) break;
+                ItemStack taken = pack.removeItem(from, wanted);
+                if (taken.isEmpty()) break;
+                wanted -= taken.getCount();
+                if (laid.isEmpty()) {
+                    laid = taken;
+                    container.setItem(gridSlot, laid);
+                } else {
+                    laid.grow(taken.getCount());
+                }
+            }
+        }
+        pack.setChanged();
+        return true;
+    }
+
+    /** The nine grid cells as a recipe reads them. */
+    private static CraftingInput gridInput(SimpleContainer container) {
+        List<ItemStack> items = new ArrayList<>();
+        for (int i = 1; i <= GRID_SIDE * GRID_SIDE; i++) items.add(container.getItem(i).copy());
+        return CraftingInput.of(GRID_SIDE, GRID_SIDE, items);
     }
 
     /** Empty the crafting grid back into the player's pack. */

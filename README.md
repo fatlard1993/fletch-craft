@@ -6,7 +6,7 @@ A Fabric mod that turns the fletching table into a crafting bench of its own, fo
 
 ## The Bench
 
-Right-click a fletching table to open a 3x3 grid and a result slot, laid out like a crafting table. Every recipe also works flipped left to right, and a fletching recipe picked in the recipe book is laid out in the grid from your inventory.
+Right-click a fletching table to open a 3x3 grid and a result slot, laid out like a crafting table. Every recipe also works flipped left to right, and a fletching recipe picked in the recipe book is laid out in the grid from your inventory: one set with a click, as many sets as you can afford (up to a full stack in each slot) with a shift-click.
 
 Fletching recipes cannot be made at a crafting table; asking for one there says "That is made at a fletching table."
 
