@@ -4,6 +4,9 @@
 		"Every recipe is a JSON file, so a datapack can change any of them."
 	],
 	"versions": {
+		"2.1.1": [
+			"Shift-clicking a recipe in the recipe book lays out as many sets as you can afford, up to a full stack in each slot."
+		],
 		"2.1.0": [
 			"Flint and obsidian axes, shovels and hoes, made only at the fletching table.",
 			"Obsidian tools enchant as well as gold.",
