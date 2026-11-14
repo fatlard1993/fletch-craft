@@ -4,6 +4,9 @@
 		"Every recipe is a JSON file, so a datapack can change any of them."
 	],
 	"versions": {
+		"2.1.5": [
+			"A demo to play in PvP Dimensions' onboarding."
+		],
 		"2.1.4": [
 			"Drop changelog notes for changes nothing in the game shows."
 		],
